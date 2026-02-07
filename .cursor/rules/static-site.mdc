@@ -1,0 +1,14 @@
+---
+description: HTML/CSS conventions for the emTesseract static site
+globs: "**/*.html,**/*.css"
+alwaysApply: false
+---
+
+# Static Site Conventions
+
+- Use semantic HTML (`header`, `main`, `section`, `nav`, `footer`)
+- Keep styles in `style.css`; use `assets/css/variables.css` for shared tokens
+- Reference CSS variables from `:root` (e.g. `var(--navy-900)`, `var(--text-100)`)
+- SVG assets: prefer inline or `<img>` from `assets/svg/`
+- Maintain existing typography: Chakra Petch (headings), Public Sans (body)
+- Test at 1920×1080 and mobile viewport; avoid breaking existing layout

@@ -1,129 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>emTesseract - Family Game Development</title>
-    <meta name="description" content="emTesseract is a family-run game development studio creating engaging, innovative games.">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="emTesseract - Family Game Development Company. Crafting immersive digital experiences through code.">
+  <title>emTesseract — Crafting immersive digital experiences through code</title>
+  <link rel="icon" type="image/png" href="logo.png?v=2" sizes="any">
+  <link rel="apple-touch-icon" href="logo.png?v=2">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function(){
+      var t=localStorage.getItem("emtesseract-theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+      document.documentElement.setAttribute("data-theme",t);
+    })();
+  </script>
 </head>
 <body>
-    <!-- Update Notification Modal -->
-    <div id="updateModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>🎉 DungeonCuties Update!</h2>
-            <div class="update-badge">v2.0 - Major Update</div>
-            <div class="update-content">
-                <h3>What's New:</h3>
-                <ul class="update-list">
-                    <li>✨ <strong>XP System</strong> - Level up your character with stat boosts!</li>
-                    <li>💰 <strong>Gold & Collectibles</strong> - Find gold coins throughout dungeons</li>
-                    <li>💪 <strong>Power-Ups</strong> - Strength, Speed, XP Boost, and Gold Boost!</li>
-                    <li>🎯 <strong>Damage Display</strong> - See exact damage values in battles</li>
-                    <li>🌊 <strong>9 Unique Biomes</strong> - Ocean, Forest, Sky, Cave, Desert, Ice, Lava & more</li>
-                    <li>🐾 <strong>13 Pets</strong> - New companions including Phoenix, Panda, Penguin!</li>
-                    <li>📱 <strong>Mobile Tap Controls</strong> - Tap anywhere to move and interact</li>
-                    <li>🖥️ <strong>Fullscreen Mode</strong> - Play in fullscreen on any device</li>
-                </ul>
-                <a href="https://mamercad.github.io/DungeonCuties" target="_blank" class="btn btn-play">Play Now!</a>
-            </div>
-        </div>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="/" class="site-logo">
+        <img src="logo.png" alt="emTesseract" width="36" height="36">
+        <span>emTesseract</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#games">Games</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li>
+            <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
+              <span class="theme-toggle__icon">🌙</span>
+              <span class="theme-toggle__label">Dark</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
     </div>
+  </header>
 
-    <div class="container">
-        <header>
-            <div class="logo">
-                <h1>🎮 emTesseract</h1>
-                <p class="tagline">Family Game Development Studio</p>
+  <main>
+    <section class="hero">
+      <img src="logo.png" alt="" class="hero__logo" width="280" height="280">
+      <div class="hero__content">
+        <p class="hero__badge">Family Game Development Company</p>
+        <h1 class="hero__title">em<span>Tesseract</span></h1>
+        <p class="hero__tagline">Crafting immersive digital experiences through code</p>
+        <a href="#games" class="hero__cta">Explore Games</a>
+      </div>
+    </section>
+
+    <section id="about" class="vision-section">
+      <div class="section__header">
+        <h2 class="section__title">About the Vision</h2>
+        <p class="section__subtitle">Building innovative game experiences with modern technology and creative storytelling</p>
+      </div>
+      <div class="vision">
+        <article class="vision__card">
+          <span class="vision__icon" aria-hidden="true">🎮</span>
+          <h3>Game Development</h3>
+          <p>Creating engaging gameplay mechanics and immersive worlds using cutting-edge technologies and frameworks.</p>
+        </article>
+        <article class="vision__card">
+          <span class="vision__icon" aria-hidden="true">🎨</span>
+          <h3>Visual Design</h3>
+          <p>Crafting beautiful interfaces and memorable visual experiences that captivate and inspire players.</p>
+        </article>
+        <article class="vision__card">
+          <span class="vision__icon" aria-hidden="true">⚡</span>
+          <h3>Performance</h3>
+          <p>Optimizing every aspect for smooth, responsive gameplay across all platforms and devices.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="games">
+      <div class="section__header">
+        <h2 class="section__title">Featured Games</h2>
+        <p class="section__subtitle">Explore our collection of interactive experiences</p>
+      </div>
+      <div class="games">
+        <article class="game-card">
+          <div class="game-card__header">
+            <span class="game-card__icon" aria-hidden="true">👾</span>
+            <div>
+              <h3 class="game-card__title">Weird Stuff</h3>
+              <div class="game-card__tags">
+                <span class="game-card__tag">Web</span>
+                <span class="game-card__tag">Platformer</span>
+                <span class="game-card__tag">Multiplayer</span>
+              </div>
             </div>
-        </header>
+          </div>
+          <p class="game-card__desc">2D pixel-art platformer adventure! Battle creatures, explore mysterious areas, and close the gate. Inspired by classic 8-bit games with single player and local co-op modes!</p>
+          <div class="game-card__footer">
+            <a href="https://emtesseract.com/weird-stuff" class="game-card__link">Play Now</a>
+          </div>
+        </article>
 
-        <main>
-            <section class="hero">
-                <h2>Building Games, Together</h2>
-                <p>We're a family-run game development studio passionate about creating fun, engaging experiences.</p>
-            </section>
+        <article class="game-card">
+          <div class="game-card__header">
+            <span class="game-card__icon" aria-hidden="true">🎲</span>
+            <div>
+              <h3 class="game-card__title">D&amp;D Campaign Generator</h3>
+              <div class="game-card__tags">
+                <span class="game-card__tag">Web</span>
+                <span class="game-card__tag">AI</span>
+                <span class="game-card__tag">Tabletop</span>
+              </div>
+            </div>
+          </div>
+          <p class="game-card__desc">AI-powered Dungeons &amp; Dragons content creator! Generate complete campaigns, character sheets, NPCs, quests, and encounters. Print-ready documents for your next adventure!</p>
+          <div class="game-card__footer">
+            <a href="https://emtesseract.com/dnd-generator" class="game-card__link">Create Campaign</a>
+          </div>
+        </article>
 
-            <section class="about">
-                <h3>About Us</h3>
-                <p>emTesseract brings together creativity, technology, and family values to craft memorable gaming experiences. From concept to launch, we pour our hearts into every project.</p>
-            </section>
+        <article class="game-card">
+          <div class="game-card__header">
+            <span class="game-card__icon" aria-hidden="true">🎅</span>
+            <div>
+              <h3 class="game-card__title">Santa's Present Bounce</h3>
+              <div class="game-card__tags">
+                <span class="game-card__tag">Web</span>
+                <span class="game-card__tag">Arcade</span>
+                <span class="game-card__tag">Casual</span>
+              </div>
+            </div>
+          </div>
+          <p class="game-card__desc">Help Santa deliver presents! Bounce gifts into chimneys using your paddle. Move with mouse or touch controls. Don't miss more than 5 presents!</p>
+          <div class="game-card__footer">
+            <a href="https://emtesseract.com/santa-bounce" class="game-card__link">Play Now</a>
+          </div>
+        </article>
 
-            <section class="games">
-                <h3>Our Games</h3>
-                <div class="game-grid">
-                    <div class="game-card">
-                        <h4>🧊 BrainFreeze</h4>
-                        <p>Fast-paced trivia game that challenges your knowledge across multiple categories.</p>
-                        <a href="https://mamercad.github.io/BrainFreeze" target="_blank" class="btn">Play Now</a>
-                    </div>
-                    
-                    <div class="game-card">
-                        <h4>🌸 DungeonCuties</h4>
-                        <p>A kawaii roguelike dungeon crawler with adorable characters, multiple biomes, and epic boss battles!</p>
-                        <a href="https://mamercad.github.io/DungeonCuties" target="_blank" class="btn">Play Now</a>
-                    </div>
-                    
-                    <div class="game-card">
-                        <h4>🎮 Overwatch Fight Club</h4>
-                        <p>Meta-gaming rules that bring new excitement to Overwatch 2. The POTG caller chooses the next challenge!</p>
-                        <a href="https://github.com/mamercad/overwatch-fight-club" target="_blank" class="btn">Learn More</a>
-                    </div>
-                    
-                    <!-- Add more games here as you build them -->
-                </div>
-            </section>
+        <article class="game-card">
+          <div class="game-card__header">
+            <span class="game-card__icon" aria-hidden="true">🧊</span>
+            <div>
+              <h3 class="game-card__title">BrainFreeze</h3>
+              <div class="game-card__tags">
+                <span class="game-card__tag">Web</span>
+                <span class="game-card__tag">Trivia</span>
+                <span class="game-card__tag">Puzzle</span>
+              </div>
+            </div>
+          </div>
+          <p class="game-card__desc">Fast-paced trivia game that challenges your knowledge across multiple categories. Test yourself with 10 questions and compete for high scores!</p>
+          <div class="game-card__footer">
+            <a href="https://mamercad.github.io/BrainFreeze" class="game-card__link">Play Now</a>
+          </div>
+        </article>
 
-            <section class="contact">
-                <h3>Get in Touch</h3>
-                <p>Interested in collaborating or learning more about our projects?</p>
-                <a href="mailto:root@emtesseract.com" class="btn btn-primary">Contact Us</a>
-            </section>
-        </main>
+        <article class="game-card">
+          <div class="game-card__header">
+            <span class="game-card__icon" aria-hidden="true">🎲</span>
+            <div>
+              <h3 class="game-card__title">DungeonCuties</h3>
+              <div class="game-card__tags">
+                <span class="game-card__tag">Web</span>
+                <span class="game-card__tag">Roguelike</span>
+                <span class="game-card__tag">Action</span>
+              </div>
+            </div>
+          </div>
+          <p class="game-card__desc">Browser-based roguelike dungeon crawler with kawaii chibi aesthetics and top-down gameplay. Adventure through procedurally generated dungeons!</p>
+          <div class="game-card__footer">
+            <a href="https://mamercad.github.io/DungeonCuties" class="game-card__link">Play Now</a>
+          </div>
+        </article>
 
-        <footer>
-            <p>&copy; 2026 emTesseract. All rights reserved.</p>
-            <p>Building the future of games, one pixel at a time.</p>
-        </footer>
-    </div>
+        <article class="game-card game-card--dev">
+          <div class="game-card__header">
+            <span class="game-card__icon" aria-hidden="true">👻</span>
+            <div>
+              <h3 class="game-card__title">Ghost Hunters Agency</h3>
+              <div class="game-card__tags">
+                <span class="game-card__tag">Roblox</span>
+                <span class="game-card__tag">Management</span>
+                <span class="game-card__tag">Simulation</span>
+              </div>
+            </div>
+          </div>
+          <p class="game-card__desc">Manage your own ghost hunting agency and catch spooky spirits in this Roblox experience. Build your team and tackle supernatural cases!</p>
+          <div class="game-card__footer">
+            <span class="game-card__link">In Development</span>
+          </div>
+        </article>
+      </div>
+    </section>
 
-    <script>
-        // Update notification system
-        const CURRENT_VERSION = '2.0'; // Update this when DungeonCuties gets new features
-        const LAST_SEEN_KEY = 'dungeoncuties_last_version';
+    <section id="contact" class="contact">
+      <div class="section__header">
+        <h2 class="section__title">Get in Touch</h2>
+        <p class="section__subtitle">Have questions or want to collaborate? Reach out through any of these channels</p>
+      </div>
+      <div class="contact__links">
+        <a href="mailto:info@emtesseract.com" class="contact__link">📧 Email</a>
+        <a href="https://github.com/mamercad" class="contact__link" rel="noopener noreferrer" target="_blank">🐙 GitHub</a>
+      </div>
+    </section>
+  </main>
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const modal = document.getElementById('updateModal');
-            const closeBtn = document.querySelector('.close');
-            const lastSeenVersion = localStorage.getItem(LAST_SEEN_KEY);
-
-            // Show modal if user hasn't seen this version
-            if (lastSeenVersion !== CURRENT_VERSION) {
-                setTimeout(() => {
-                    modal.style.display = 'flex';
-                }, 500); // Small delay for better UX
-            }
-
-            // Close modal when X is clicked
-            closeBtn.onclick = () => {
-                modal.style.display = 'none';
-                localStorage.setItem(LAST_SEEN_KEY, CURRENT_VERSION);
-            };
-
-            // Close modal when clicking outside
-            window.onclick = (event) => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                    localStorage.setItem(LAST_SEEN_KEY, CURRENT_VERSION);
-                }
-            };
-
-            // Close when Play Now is clicked
-            document.querySelector('.btn-play').onclick = () => {
-                localStorage.setItem(LAST_SEEN_KEY, CURRENT_VERSION);
-            };
-        });
-    </script>
+  <footer class="site-footer">
+    <p>© emTesseract — Family Game Development Company</p>
+  </footer>
+  <script>
+    (function () {
+      const storageKey = "emtesseract-theme";
+      const getPreferred = () =>
+        localStorage.getItem(storageKey) ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const setTheme = (theme) => {
+        document.documentElement.setAttribute("data-theme", theme);
+        const btn = document.querySelector(".theme-toggle");
+        if (btn) {
+          btn.querySelector(".theme-toggle__icon").textContent = theme === "dark" ? "☀️" : "🌙";
+          btn.querySelector(".theme-toggle__label").textContent = theme === "dark" ? "Light" : "Dark";
+        }
+        localStorage.setItem(storageKey, theme);
+      };
+      setTheme(getPreferred());
+      document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+        setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
 </body>
 </html>
