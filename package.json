@@ -2,10 +2,18 @@
   "name": "emtesseract.com",
   "private": true,
   "scripts": {
-    "deploy": "wrangler pages deploy . --project-name=emtesseract",
-    "preview": "wrangler pages dev ."
+    "deploy": "wrangler pages deploy . --project-name=emtesseract-com",
+    "preview": "wrangler pages dev .",
+    "lint": "npm run lint:md && npm run lint:css",
+    "lint:md": "markdownlint --ignore node_modules '*.md'",
+    "lint:css": "stylelint \"**/*.css\"",
+    "test": "html-validate index.html 404.html"
   },
   "devDependencies": {
+    "html-validate": "^8",
+    "markdownlint-cli": "^0.38",
+    "stylelint": "^16",
+    "stylelint-config-standard": "^36",
     "wrangler": "^4"
   }
 }

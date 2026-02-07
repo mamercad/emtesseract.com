@@ -19,6 +19,7 @@
 **Typography:** Syne (headings), DM Sans (body)
 
 **Structure:**
+
 - `index.html` — semantic HTML, theme toggle, content from live site (game dev company)
 - `style.css` — main styles, light/dark via `[data-theme]`
 - `assets/css/variables.css` — design tokens for both themes

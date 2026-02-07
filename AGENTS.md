@@ -8,7 +8,7 @@ Static marketing/landing page for **emTesseract** — family game development co
 
 ## Structure
 
-```
+```text
 emtesseract.com/
 ├── index.html          # Main page
 ├── style.css           # All styles
@@ -16,6 +16,7 @@ emtesseract.com/
 ├── 404.html            # Custom 404 (theme-aware)
 ├── wrangler.toml       # Cloudflare Pages config
 ├── package.json        # npm scripts (deploy, preview)
+├── DEPLOY.md           # Deployment guide
 ├── assets/
 │   └── css/variables.css  # Design tokens (light/dark)
 ├── .cursor/            # Cursor rules and skills
@@ -28,6 +29,13 @@ emtesseract.com/
 - **Theme:** Light and dark mode via `[data-theme]`; toggle in header; persists in `localStorage` (key: `emtesseract-theme`)
 - **Palette:** Retro arcade — cream/blue (light), stone/cyan (dark); bold borders, offset shadows
 - **Hero layout:** Logo and text side-by-side (stacked on mobile)
+
+## Lint & Test
+
+```bash
+npm run lint   # markdownlint + stylelint
+npm run test   # html-validate (HTML5)
+```
 
 ## Conventions
 
@@ -48,7 +56,7 @@ npm run deploy
 # or: npx wrangler pages deploy .
 ```
 
-Requires `wrangler.toml` with `name` and `pages_build_output_dir`. Project must exist in Cloudflare (create via `npx wrangler pages project create emtesseract` if needed).
+Requires `wrangler.toml` with `name` and `pages_build_output_dir`. Project must exist in Cloudflare (create via `npx wrangler pages project create emtesseract-com` if needed).
 
 **Custom domain:** Configure in Cloudflare Dashboard → Pages project → Custom domains.
 
