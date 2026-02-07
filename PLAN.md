@@ -10,7 +10,7 @@
 - Read existing emtesseract.com live web site for *content*
 - Base landing page content on existing site *content*
 - Hosted at emtesseract.com
-- Hosted by Cloudflare Pages
+- Hosted by Cloudflare Workers
 
 ## Implementation (current)
 
@@ -32,10 +32,8 @@
 
 ## Deployment
 
-- **Platform:** Cloudflare Pages
-- **Build command:** (empty) or `exit 0`
-- **Build output directory:** `/`
+- **Platform:** Cloudflare Workers (static assets)
 - **Custom domain:** emtesseract.com (set in Cloudflare Dashboard)
-- **No CNAME file** — domain configured in Cloudflare, not GitHub Pages
+- **No CNAME file** — domain configured in Cloudflare
 
-**Wrangler CLI:** `npm run deploy` or `npx wrangler pages deploy .` (not `wrangler versions upload`, which is for Workers)
+**Wrangler CLI:** `npm run deploy` or `npx wrangler deploy`

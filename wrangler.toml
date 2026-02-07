@@ -1,3 +1,6 @@
 name = "emtesseract-com"
-pages_build_output_dir = "."
 compatibility_date = "2026-02-07"
+
+[assets]
+directory = "."
+not_found_handling = "404-page"

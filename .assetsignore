@@ -1,0 +1,16 @@
+**/node_modules
+**/.DS_Store
+**/.git
+**/.gitignore
+**/.wrangler
+**/.vscode
+**/.cursor
+**/package.json
+**/package-lock.json
+**/.markdownlint.json
+**/.stylelintrc.json
+**/wrangler.toml
+**/DEPLOY.md
+**/AGENTS.md
+**/PLAN.md
+**/.assetsignore

@@ -2,8 +2,8 @@
   "name": "emtesseract.com",
   "private": true,
   "scripts": {
-    "deploy": "wrangler pages deploy . --project-name=emtesseract-com",
-    "preview": "wrangler pages dev .",
+    "deploy": "npx wrangler deploy",
+    "preview": "npx wrangler dev",
     "lint": "npm run lint:md && npm run lint:css",
     "lint:md": "markdownlint --ignore node_modules '*.md'",
     "lint:css": "stylelint \"**/*.css\"",

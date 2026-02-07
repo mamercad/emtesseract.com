@@ -4,7 +4,7 @@ Guidance for AI agents working on the emTesseract site.
 
 ## Project Overview
 
-Static marketing/landing page for **emTesseract** — family game development company. Single HTML file + CSS, no build step. Deployed via Cloudflare Pages (custom domain: emtesseract.com).
+Static marketing/landing page for **emTesseract** — family game development company. Single HTML file + CSS, no build step. Deployed via Cloudflare Workers (static assets; custom domain: emtesseract.com).
 
 ## Structure
 
@@ -44,23 +44,16 @@ npm run test   # html-validate (HTML5)
 - **Assets:** SVG preferred; PNG for logo/photos
 - **Test:** 1920×1080 and mobile viewport
 
-## Deployment (Cloudflare Pages)
+## Deployment (Cloudflare Workers)
 
-**Git integration:** Build command (empty) or `exit 0`; build output directory `/`.
-
-**Wrangler CLI (direct upload):**
+**Static assets only** — no Worker script; `[assets]` in `wrangler.toml` serves the site.
 
 ```bash
-npm install
 npm run deploy
-# or: npx wrangler pages deploy .
+# or: npx wrangler deploy
 ```
 
-Requires `wrangler.toml` with `name` and `pages_build_output_dir`. Project must exist in Cloudflare (create via `npx wrangler pages project create emtesseract-com` if needed).
-
-**Custom domain:** Configure in Cloudflare Dashboard → Pages project → Custom domains.
-
-**Note:** `wrangler versions upload` is for Workers, not Pages. For static Pages use `wrangler pages deploy`.
+**Custom domain:** Configure in Cloudflare Dashboard → Workers & Pages → emtesseract-com → Domains & routes.
 
 ## Preview
 
