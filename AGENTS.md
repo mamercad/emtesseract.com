@@ -14,6 +14,8 @@ emtesseract.com/
 ├── style.css           # All styles
 ├── logo.png            # Site logo
 ├── 404.html            # Custom 404 (theme-aware)
+├── wrangler.toml       # Cloudflare Pages config
+├── package.json        # npm scripts (deploy, preview)
 ├── assets/
 │   └── css/variables.css  # Design tokens (light/dark)
 ├── .cursor/            # Cursor rules and skills
@@ -36,9 +38,21 @@ emtesseract.com/
 
 ## Deployment (Cloudflare Pages)
 
-- **Build command:** (empty) or `exit 0`
-- **Build output directory:** `/`
-- **Custom domain:** Configure in Cloudflare Dashboard → Pages project → Custom domains
+**Git integration:** Build command (empty) or `exit 0`; build output directory `/`.
+
+**Wrangler CLI (direct upload):**
+
+```bash
+npm install
+npm run deploy
+# or: npx wrangler pages deploy .
+```
+
+Requires `wrangler.toml` with `name` and `pages_build_output_dir`. Project must exist in Cloudflare (create via `npx wrangler pages project create emtesseract` if needed).
+
+**Custom domain:** Configure in Cloudflare Dashboard → Pages project → Custom domains.
+
+**Note:** `wrangler versions upload` is for Workers, not Pages. For static Pages use `wrangler pages deploy`.
 
 ## Preview
 

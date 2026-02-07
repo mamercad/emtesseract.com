@@ -1,0 +1,11 @@
+{
+  "name": "emtesseract.com",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler pages deploy . --project-name=emtesseract",
+    "preview": "wrangler pages dev ."
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

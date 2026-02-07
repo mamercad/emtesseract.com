@@ -36,3 +36,5 @@
 - **Build output directory:** `/`
 - **Custom domain:** emtesseract.com (set in Cloudflare Dashboard)
 - **No CNAME file** — domain configured in Cloudflare, not GitHub Pages
+
+**Wrangler CLI:** `npm run deploy` or `npx wrangler pages deploy .` (not `wrangler versions upload`, which is for Workers)
