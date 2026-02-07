@@ -8,7 +8,7 @@ alwaysApply: false
 
 - Use semantic HTML (`header`, `main`, `section`, `nav`, `footer`)
 - Keep styles in `style.css`; use `assets/css/variables.css` for shared tokens
-- Reference CSS variables from `:root` (e.g. `var(--navy-900)`, `var(--text-100)`)
+- Reference CSS variables from `:root` (e.g. `var(--text-100)`, `var(--accent)`, `var(--bg-card)`)
 - SVG assets: prefer inline or `<img>` from `assets/svg/`
-- Maintain existing typography: Chakra Petch (headings), Public Sans (body)
+- Typography: Syne (headings), DM Sans (body)
 - Test at 1920×1080 and mobile viewport; avoid breaking existing layout

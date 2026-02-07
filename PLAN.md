@@ -22,9 +22,17 @@
 - `index.html` — semantic HTML, theme toggle, content from live site (game dev company)
 - `style.css` — main styles, light/dark via `[data-theme]`
 - `assets/css/variables.css` — design tokens for both themes
+- `logo.png` — site logo
 - `404.html` — custom 404 with theme support
-- `CNAME` — emtesseract.com
 
 **Theme:** Toggle in header; respects `prefers-color-scheme` and persists in `localStorage` (key: `emtesseract-theme`).
 
 **Content:** Hero, About (3 pillars), Featured Games (6 cards), Get in Touch, footer.
+
+## Deployment
+
+- **Platform:** Cloudflare Pages
+- **Build command:** (empty) or `exit 0`
+- **Build output directory:** `/`
+- **Custom domain:** emtesseract.com (set in Cloudflare Dashboard)
+- **No CNAME file** — domain configured in Cloudflare, not GitHub Pages
