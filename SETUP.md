@@ -40,7 +40,7 @@ OLLAMA_MODEL=llama3.2
 **Option A — psql (recommended):**
 
 1. Supabase Dashboard → Project Settings → Database → **Connection string** → **URI**
-2. Add to `.env`: `DATABASE_URL=postgresql://...` (if password has `!`, ensure it's in .env; the script disables history expansion)
+2. Add to `.env`: `DATABASE_URL=postgresql://...` — if password has `@` or `!`, URL-encode: `@` → `%40`, `!` → `%21`
 3. Supabase may require SSL: append `?sslmode=require` to the URI if you get connection errors
 4. Install psql: `sudo apt install postgresql-client` (Ubuntu/Debian)
 5. Run: `./migrations/migrate.sh`
