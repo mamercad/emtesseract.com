@@ -5,6 +5,8 @@
 import "./lib/env.mjs";
 import { query } from "./lib/db.mjs";
 import { complete } from "./lib/llm.mjs";
+import { sanitize, hash } from "./lib/utils.mjs";
+import { getFormatConfig } from "./lib/format-config.mjs";
 
 const WORKER_ID = process.env.WORKER_ID || "roundtable-worker-1";
 const POLL_MS = parseInt(process.env.POLL_INTERVAL_MS || "30000", 10);
@@ -14,13 +16,6 @@ const MIN_CONFIDENCE = 0.55;
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
-}
-
-function sanitize(text) {
-  if (!text) return "";
-  let s = String(text).trim().slice(0, MAX_TURN_CHARS);
-  s = s.replace(/https?:\/\/\S+/g, "[link]");
-  return s || "...";
 }
 
 async function emitEvent(agentId, kind, title, summary) {
@@ -98,7 +93,7 @@ async function runConversation(session) {
       { temperature }
     );
 
-    const dialogue = sanitize(reply);
+    const dialogue = sanitize(reply, MAX_TURN_CHARS);
     history.push({ speaker, dialogue, turn });
     lastSpeaker = speaker;
 
@@ -150,14 +145,8 @@ Confidence 0.55-0.95. Only include what's clearly supported.\n\nConversation:\n$
     type: m.type,
     content: String(m.content).slice(0, 500),
     confidence: Math.min(0.95, Math.max(0.55, m.confidence ?? 0.6)),
-    source_trace_id: `roundtable:${sessionId}:${m.agent_id}:${m.type}:${hash(m.content)}`,
+    source_trace_id: `roundtable:${sessionId}:${m.agent_id}:${m.type}:${hash(String(m.content))}`,
   }));
-}
-
-function hash(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  return Math.abs(h).toString(36);
 }
 
 async function writeMemories(memories) {

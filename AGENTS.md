@@ -21,6 +21,7 @@ emtesseract.com/
 │   ├── config.js       # Supabase URL + anon key (edit for your project)
 │   └── config.example.js
 ├── workers/            # Node.js workers (heartbeat, proposal-service)
+├── tests/             # Unit + integration (utils, llm, proposal-service)
 ├── migrations/         # Supabase SQL migrations (ops_*)
 ├── plans/              # AGENTS_AT_WORK.md (tutorial reference)
 ├── wrangler.toml       # Cloudflare Workers config
@@ -41,9 +42,15 @@ emtesseract.com/
 ## Lint & Test
 
 ```bash
-npm run lint   # markdownlint + stylelint
-npm run test   # html-validate (HTML5)
+npm run lint    # markdownlint + stylelint
+npm run test    # html-validate + unit tests
+npm run test:unit         # Unit tests only (utils, llm, format-config)
+npm run test:integration  # Integration tests (requires DATABASE_URL)
+npm run test:all          # Full suite + integration
 ```
+
+**Unit tests** (no DB): `tests/unit/*.test.mjs` — pure logic for utils, llm, format-config.
+**Integration tests** (need Postgres): `tests/integration/*.test.mjs` — proposal-service, db. Skip when `DATABASE_URL` unset.
 
 ## Conventions
 
