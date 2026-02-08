@@ -12,9 +12,7 @@ Quick start:
 
 ```bash
 # 1. Install Postgres, create DB
-sudo apt install postgresql postgresql-client
-sudo -u postgres createuser -s emtesseract
-sudo -u postgres createdb -O emtesseract emtesseract_ops
+npm run setup-postgres
 
 # 2. .env
 DATABASE_URL=postgresql://emtesseract@localhost:5432/emtesseract_ops

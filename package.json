@@ -10,7 +10,8 @@
     "lint:css": "stylelint \"**/*.css\"",
     "test": "html-validate index.html 404.html",
     "migrate": "bash migrations/migrate.sh",
-    "api": "node api/server.mjs"
+    "api": "node api/server.mjs",
+    "setup-postgres": "bash scripts/setup-postgres.sh"
   },
   "devDependencies": {
     "html-validate": "^8",

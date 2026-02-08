@@ -5,31 +5,36 @@ Run emTesseract entirely on Boomer—no Supabase, no cloud.
 ## 1. Install Postgres on Boomer
 
 ```bash
+npm run setup-postgres
+```
+
+Or manually:
+
+```bash
 sudo apt update
 sudo apt install postgresql postgresql-client
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
-```
-
-## 2. Create database and user
-
-```bash
-sudo -u postgres psql -c "CREATE USER emtesseract WITH PASSWORD 'your-secure-password';"
+sudo -u postgres psql -c "CREATE USER emtesseract;"
 sudo -u postgres psql -c "CREATE DATABASE emtesseract_ops OWNER emtesseract;"
 ```
 
-## 3. Configure .env
+**Note:** If your `pg_hba.conf` requires password auth for localhost, run:
+`sudo -u postgres psql -c "ALTER USER emtesseract WITH PASSWORD 'your-password';"`
+and use `postgresql://emtesseract:your-password@localhost:5432/emtesseract_ops` in `.env`.
+
+## 2. Configure .env
 
 ```bash
-# Local Postgres
-DATABASE_URL=postgresql://emtesseract:your-secure-password@localhost:5432/emtesseract_ops
+# Local Postgres (trust auth — no password)
+DATABASE_URL=postgresql://emtesseract@localhost:5432/emtesseract_ops
 
 # Ollama (same machine)
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen3-coder-next-32k
 ```
 
-## 4. Run migrations
+## 3. Run migrations
 
 ```bash
 cd /path/to/emtesseract.com
@@ -39,7 +44,7 @@ npm run migrate
 
 Migration 015 (RLS) is skipped automatically when `DATABASE_URL` does not contain `supabase`—local Postgres does not have the `anon` role.
 
-## 5. Seed trigger rule
+## 4. Seed trigger rule
 
 ```bash
 psql "$DATABASE_URL" -c "
@@ -54,7 +59,7 @@ VALUES (
 "
 ```
 
-## 6. Run workers and API
+## 5. Run workers and API
 
 ```bash
 cd workers && npm install && npm run heartbeat &
@@ -64,7 +69,7 @@ cd .. && npm run api &
 
 Or with systemd/supervisor for production.
 
-## 7. Stage dashboard
+## 6. Stage dashboard
 
 The API server serves both static files and the `/api/ops_*` endpoints. Open:
 
