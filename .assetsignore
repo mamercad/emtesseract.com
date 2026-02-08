@@ -3,6 +3,7 @@
 **/.git
 **/.gitignore
 **/.wrangler
+**/.github
 **/.vscode
 **/.cursor
 **/package.json
