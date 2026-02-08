@@ -104,6 +104,7 @@ With Supabase, Stage uses the Supabase client. You would need to restore the Sup
 - **Heartbeat fails:** Check `.env` is loaded (workers read from project root).
 - **No proposals:** Run `npm run seed` to ensure `ops_trigger_rules` has the bootstrap observer trigger.
 - **Stage empty:** Ensure API server is running; set `apiUrl` in `stage/config.js`. See [docs/STAGE_UI.md](docs/STAGE_UI.md).
+- **Chat 404:** Chat requires the API server (same as Stage). See [docs/CHAT.md](docs/CHAT.md).
 - **Steps never run:** Step worker must be running; Ollama must be reachable at `OLLAMA_BASE_URL`.
 - **Ollama connection refused:** Ensure `ollama serve` on Boomer; if worker is remote, use `http://boomer:11434` or Boomer's IP.
 - **Network unreachable (Supabase):** Supabase direct connection uses IPv6. Pivot to local Postgres—see docs/LOCAL_POSTGRES.md.

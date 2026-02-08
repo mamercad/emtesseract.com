@@ -163,7 +163,7 @@
     $send.disabled = true;
 
     try {
-      const { session_id: sid, assistant_message_id } = await fetchApi("/api/chat", {
+      const { session_id: sid } = await fetchApi("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -204,8 +204,9 @@
     await loadAgents();
     setupForm();
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) stopPolling();
-      else if (isSending && sessionId) {
+      if (document.hidden) {
+        stopPolling();
+      } else if (isSending && sessionId) {
         pollForResponse();
         pollTimer = setInterval(pollForResponse, POLL_INTERVAL_MS);
       }

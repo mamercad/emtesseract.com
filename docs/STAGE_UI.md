@@ -8,7 +8,7 @@ Stage is the frontend for emTesseract Ops. It shows agent activity, missions, an
 |------|------|---------|
 | Stage | `/stage/` | Signal feed, mission cards, Give task form |
 | Swimlane | `/stage/swimlane.html` | Kanban-style workflow (Proposal → Approved → In progress → Done) |
-| Chat | `/stage/chat.html` | Chat with agents (async; Ollama runs in background, history in DB) |
+| Chat | `/stage/chat.html` | Chat with agents (async; [docs/CHAT.md](CHAT.md)) |
 
 ## Architecture
 
@@ -18,9 +18,11 @@ Stage is the frontend for emTesseract Ops. It shows agent activity, missions, an
 
 ## Chat API
 
-- **POST /api/chat** — Send message: `{ agent_id, content, session_id? }`. Creates session if new; returns `{ session_id, message }` with background LLM processing.
-- **GET /api/chat/session/:id** — Messages for a session.
-- **GET /api/chat/sessions?agent_id=** — Recent sessions for an agent.
+- **POST /api/chat** — Send message: `{ agent_id, content, session_id? }`. Creates session if new; returns `{ session_id, assistant_message_id }` immediately. LLM runs in background, response written to DB.
+- **GET /api/chat/session/:id** — All messages for a session (used for polling).
+- **GET /api/chat/sessions?agent_id=X** — Recent sessions for an agent.
+
+**Chat flow:** Client sends → gets `session_id` → polls GET session every 2s until assistant message has `status: done` or `failed`. Polling pauses when tab is hidden; resumes on focus. History persists in DB; user can leave and return to see completed responses.
 
 ## Data Refresh
 
@@ -35,6 +37,7 @@ Stage is the frontend for emTesseract Ops. It shows agent activity, missions, an
 - Feed: 10s
 - Missions: 20s
 - Swimlane: 15s
+- Chat: 2s (while waiting for assistant response)
 
 **Visibility** — Polling pauses when the tab is hidden (Page Visibility API); resumes when visible.
 

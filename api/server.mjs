@@ -97,6 +97,7 @@ async function handleApi(pathname, searchParams) {
     return { data: rows ?? [] };
   }
 
+  /* Chat — async, server-stored history */
   const chatSessionMatch = pathname.match(/^\/api\/chat\/session\/([0-9a-f-]{36})$/);
   if (chatSessionMatch) {
     const sessionId = chatSessionMatch[1];
@@ -199,7 +200,7 @@ async function readJsonBody(req) {
   });
 }
 
-async function processChatInBackground(assistantMessageId, systemPrompt, llmMessages, pool) {
+async function processChatInBackground(assistantMessageId, llmMessages, pool) {
   try {
     const content = await complete(llmMessages, { temperature: 0.7 });
     await pool.query(
@@ -279,7 +280,7 @@ async function handlePostChat(body, pool) {
   }
 
   setImmediate(() => {
-    processChatInBackground(assistantMessageId, systemPrompt, llmMessages, pool).catch((err) =>
+    processChatInBackground(assistantMessageId, llmMessages, pool).catch((err) =>
       console.error("Chat background error:", err)
     );
   });
