@@ -124,10 +124,11 @@
     item.dataset.id = e.id;
     item.innerHTML = `
       <span class="feed-item__kind">${escapeHtml(e.kind)}</span>
+      ${e.id ? `<span class="feed-item__id" title="${e.id}">${String(e.id).slice(0, 8)}</span>` : ""}
       <span class="feed-item__agent">${escapeHtml(e.agent_id)}</span>
       <span class="feed-item__content">${escapeHtml(e.title)}${e.summary ? ": " + escapeHtml(e.summary) : ""}</span>
       <span class="feed-item__time">${formatTime(e.created_at)}</span>`;
-    $feedList.insertBefore(item, $feedList.firstChild);
+    $feedList.appendChild(item);
   }
 
   function populateKindFilter() {
@@ -182,6 +183,7 @@
           <h3 class="mission-card__title">${escapeHtml(m.title)}</h3>
           <div class="mission-card__meta">
             <span class="mission-card__status mission-card__status--${m.status}">${m.status}</span>
+            <span class="mission-card__id" title="${m.id}">${m.id.slice(0, 8)}</span>
             <span>${escapeHtml(m.created_by)}</span>
             <span>${formatTime(m.created_at)}</span>
           </div>

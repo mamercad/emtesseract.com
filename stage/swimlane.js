@@ -43,8 +43,11 @@
       link = `<a href="/stage/#mission-${item.mission_id}" class="swimlane-card__link">View in Stage</a>`;
     }
 
+    const taskId = item.mission_id || item.proposal_id || item.id;
+    const shortId = taskId ? String(taskId).slice(0, 8) : "";
     card.innerHTML = `
       <span class="swimlane-card__agent swimlane-card__agent--${accent}">${escapeHtml(item.agent)}</span>
+      ${shortId ? `<span class="swimlane-card__id" title="${taskId}">${shortId}</span>` : ""}
       <h4 class="swimlane-card__title">${escapeHtml(item.title)}</h4>
       ${item.steps_summary ? `<span class="swimlane-card__steps">${escapeHtml(item.steps_summary)}</span>` : ""}
       <span class="swimlane-card__time">${formatTime(item.created_at)}</span>

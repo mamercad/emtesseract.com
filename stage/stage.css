@@ -227,6 +227,13 @@
   min-width: 5ch;
 }
 
+.feed-item__id {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--stage-accent-muted);
+}
+
 .feed-item__agent {
   flex-shrink: 0;
   font-weight: 600;
@@ -290,6 +297,12 @@
   font-size: 0.75rem;
   color: var(--text-300);
   margin-bottom: var(--space-sm);
+}
+
+.mission-card__id {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--stage-accent-muted);
 }
 
 .mission-card__status {
@@ -600,6 +613,14 @@
 .swimlane-card__agent--ok { background: color-mix(in srgb, var(--stage-accent-ok) 25%, transparent); color: var(--stage-accent-ok); }
 .swimlane-card__agent--pending { background: color-mix(in srgb, var(--stage-accent-pending) 25%, transparent); color: var(--stage-accent-pending); }
 .swimlane-card__agent--muted { background: color-mix(in srgb, var(--stage-accent-muted) 25%, transparent); color: var(--stage-accent-muted); }
+
+.swimlane-card__id {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--stage-accent-muted);
+  margin-left: var(--space-xs);
+}
 
 .swimlane-card__title {
   margin: 0 0 var(--space-xs);
