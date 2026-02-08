@@ -96,6 +96,65 @@ async function handleApi(pathname, searchParams) {
     return { data: rows ?? [] };
   }
 
+  if (pathname === "/api/ops_work_items") {
+    const { rows: proposals } = await pool.query(
+      `SELECT id, agent_id, title, status, created_at FROM ops_mission_proposals
+       WHERE status = 'pending' ORDER BY created_at DESC LIMIT 20`
+    );
+
+    const { rows: missions } = await pool.query(
+      `SELECT m.id, m.title, m.status, m.created_by, m.created_at,
+        (SELECT json_agg(json_build_object('kind', s.kind, 'status', s.status))
+         FROM ops_mission_steps s WHERE s.mission_id = m.id) AS steps
+       FROM ops_missions m ORDER BY m.created_at DESC LIMIT 50`
+    );
+
+    const items = [];
+
+    for (const p of proposals ?? []) {
+      items.push({
+        id: p.id,
+        type: "proposal",
+        agent: p.agent_id,
+        stage: "proposal",
+        title: p.title,
+        status: p.status,
+        created_at: p.created_at,
+        proposal_id: p.id,
+        mission_id: null,
+        steps_summary: null,
+      });
+    }
+
+    for (const m of missions ?? []) {
+      const steps = m.steps ?? [];
+      const stepsArr = Array.isArray(steps) ? steps : [];
+      const done = stepsArr.filter((s) => s.status === "succeeded" || s.status === "failed").length;
+      const total = stepsArr.length;
+      const stepsSummary = total > 0 ? `${done}/${total} steps` : null;
+
+      let stage = "approved";
+      if (m.status === "running") stage = "in_progress";
+      else if (m.status === "succeeded" || m.status === "failed") stage = "done";
+
+      items.push({
+        id: m.id,
+        type: "mission",
+        agent: m.created_by,
+        stage,
+        title: m.title,
+        status: m.status,
+        created_at: m.created_at,
+        proposal_id: null,
+        mission_id: m.id,
+        steps_summary: stepsSummary,
+      });
+    }
+
+    items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    return { data: items.slice(0, 50) };
+  }
+
   return null;
 }
 

@@ -178,7 +178,7 @@
       $missionsList.innerHTML = missions
         .map(
           (m) => `
-        <article class="mission-card ${newMissionIds.has(m.id) ? "mission-card--new" : ""}" data-id="${m.id}">
+        <article class="mission-card ${newMissionIds.has(m.id) ? "mission-card--new" : ""}" id="mission-${m.id}" data-id="${m.id}">
           <h3 class="mission-card__title">${escapeHtml(m.title)}</h3>
           <div class="mission-card__meta">
             <span class="mission-card__status mission-card__status--${m.status}">${m.status}</span>
