@@ -85,6 +85,10 @@ To access from another machine, set `apiUrl` in `stage/config.js` to `http://boo
 | Ollama   | 11434 |
 | Stage API| 8788  |
 
+## Capacity check
+
+Run `./scripts/boomer-specs.sh` to verify CPU, RAM, GPU, disk, and services. Use the output to confirm Boomer can run all agents and Ollama.
+
 ## Troubleshooting
 
 - **Connection refused:** Ensure Postgres is running (`sudo systemctl status postgresql`).
