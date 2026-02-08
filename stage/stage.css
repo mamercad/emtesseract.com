@@ -1087,6 +1087,8 @@
 
 .roundtables-list-section {
   padding-top: var(--space-md);
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
 }
 
 .roundtables-list {
@@ -1185,7 +1187,7 @@
   overflow-y: auto;
   padding: var(--space-lg);
   min-height: 320px;
-  max-height: 70vh;
+  max-height: calc(100vh - 180px);
 }
 
 .roundtables-transcript-header {
