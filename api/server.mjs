@@ -9,6 +9,7 @@ import { join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 import { createProposal } from "../workers/lib/proposal-service.mjs";
+import { complete } from "../workers/lib/llm.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -173,6 +174,41 @@ async function readJsonBody(req) {
   });
 }
 
+async function handlePostChat(body, pool) {
+  const msgs = body.messages;
+  const agentId = body.agent_id || "";
+
+  if (!Array.isArray(msgs) || msgs.length === 0) {
+    return { status: 400, json: { error: "messages array required" } };
+  }
+
+  let systemPrompt =
+    "You are part of the emTesseract ops team. Help with missions, content ideas, and analysis. Be concise and friendly.";
+  if (agentId) {
+    const { rows } = await pool.query(
+      "SELECT system_directive, display_name FROM ops_agents WHERE id = $1 AND enabled = true",
+      [agentId]
+    );
+    if (rows?.[0]?.system_directive) {
+      systemPrompt = rows[0].system_directive;
+    } else if (rows?.[0]?.display_name) {
+      systemPrompt = `You are ${rows[0].display_name}. ${systemPrompt}`;
+    }
+  }
+
+  const llmMessages = [{ role: "system", content: systemPrompt }];
+  for (const m of msgs) {
+    if (m.role && m.content) llmMessages.push({ role: m.role, content: String(m.content) });
+  }
+
+  try {
+    const content = await complete(llmMessages, { temperature: 0.7 });
+    return { status: 200, json: { content } };
+  } catch (err) {
+    return { status: 500, json: { error: err.message } };
+  }
+}
+
 async function handlePostProposals(body) {
   const agentId = body.agent_id;
   const title = body.title || "[human] Task";
@@ -209,6 +245,19 @@ async function handler(req, res) {
       } catch (err) {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: err.message || "Bad request" }));
+      }
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/api/chat") {
+      try {
+        const body = await readJsonBody(req);
+        const { status, json } = await handlePostChat(body, pool);
+        res.writeHead(status, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(json));
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || "Chat failed" }));
       }
       return;
     }

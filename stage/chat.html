@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="emTesseract Ops — Swimlane workflow view">
-  <title>Swimlane — emTesseract Ops</title>
+  <meta name="description" content="emTesseract Ops — Chat with agents">
+  <title>Chat — emTesseract Ops</title>
   <link rel="icon" type="image/png" href="/logo.png?v=2" sizes="any">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/stage/stage.css">
@@ -17,16 +17,16 @@
   </script>
 </head>
 
-<body class="stage-page stage-page--swimlane">
+<body class="stage-page stage-page--chat">
   <header class="stage-header">
     <div class="stage-header__inner">
       <a href="/" class="stage-logo">
         <img src="/logo.png" alt="emTesseract" width="32" height="32">
-        <span>Swimlane</span>
+        <span>Chat</span>
       </a>
       <nav class="stage-nav">
         <a href="/stage/">Stage</a>
-        <a href="/stage/chat.html">Chat</a>
+        <a href="/stage/swimlane.html">Swimlane</a>
         <a href="/">← Home</a>
         <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
           <span class="theme-toggle__icon">🌙</span>
@@ -36,31 +36,40 @@
     </div>
   </header>
 
-  <main class="swimlane-main">
-    <div class="swimlane-board" id="swimlane-board">
-      <div class="swimlane-column" data-stage="proposal">
-        <h3 class="swimlane-column__title">Proposal</h3>
-        <div class="swimlane-column__cards" id="lane-proposal"></div>
+  <main class="chat-main">
+    <aside class="chat-sidebar">
+      <section class="chat-agents">
+        <h2 class="stage-section__title">Chat with</h2>
+        <div class="chat-agents-list" id="chat-agents-list">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+    </aside>
+
+    <section class="chat-panel">
+      <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
+        <div class="chat-welcome" id="chat-welcome">
+          <p>Pick an agent to start. They’ll respond using the same model as roundtables.</p>
+        </div>
       </div>
-      <div class="swimlane-column" data-stage="approved">
-        <h3 class="swimlane-column__title">Approved</h3>
-        <div class="swimlane-column__cards" id="lane-approved"></div>
-      </div>
-      <div class="swimlane-column" data-stage="in_progress">
-        <h3 class="swimlane-column__title">In progress</h3>
-        <div class="swimlane-column__cards" id="lane-in_progress"></div>
-      </div>
-      <div class="swimlane-column" data-stage="done">
-        <h3 class="swimlane-column__title">Done</h3>
-        <div class="swimlane-column__cards" id="lane-done"></div>
-      </div>
-    </div>
-    <div class="swimlane-empty" id="swimlane-empty" hidden>No work items yet.</div>
+      <form class="chat-input-form" id="chat-input-form">
+        <textarea
+          id="chat-input"
+          placeholder="Type a message…"
+          rows="1"
+          autocomplete="off"
+          aria-label="Message"
+        ></textarea>
+        <button type="submit" class="chat-send" id="chat-send" aria-label="Send" disabled>
+          <span class="chat-send__icon">→</span>
+        </button>
+      </form>
+    </section>
   </main>
 
   <script src="/stage/config.js"></script>
   <script src="/stage/shared.js"></script>
-  <script src="/stage/swimlane.js"></script>
+  <script src="/stage/chat.js"></script>
   <script>
     (function () {
       const storageKey = "emtesseract-theme";

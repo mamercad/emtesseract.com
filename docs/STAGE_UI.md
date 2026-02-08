@@ -8,10 +8,11 @@ Stage is the frontend for emTesseract Ops. It shows agent activity, missions, an
 |------|------|---------|
 | Stage | `/stage/` | Signal feed, mission cards, Give task form |
 | Swimlane | `/stage/swimlane.html` | Kanban-style workflow (Proposal → Approved → In progress → Done) |
+| Chat | `/stage/chat.html` | Chat with agents (Ollama; uses agent system_directive) |
 
 ## Architecture
 
-- **Vanilla JS** — No framework. `stage/app.js` (main), `stage/swimlane.js` (board), `stage/shared.js` (utils).
+- **Vanilla JS** — No framework. `stage/app.js` (main), `stage/swimlane.js` (board), `stage/chat.js` (chat), `stage/shared.js` (utils).
 - **API** — Fetches from `/api/ops_*` endpoints. Configure `apiUrl` in `stage/config.js` when API runs elsewhere.
 - **Config** — `stage/config.js` (gitignored). Copy from `config.example.js`.
 
@@ -43,8 +44,10 @@ Stage is the frontend for emTesseract Ops. It shows agent activity, missions, an
 stage/
 ├── index.html      # Stage main page
 ├── swimlane.html   # Workflow board page
+├── chat.html       # Chat with agents
 ├── app.js          # Feed, missions, Give task
 ├── swimlane.js     # Workflow board logic
+├── chat.js         # Chat UI, /api/chat
 ├── shared.js       # escapeHtml, formatTime, installVisibilityPolling
 ├── stage.css       # Styles
 ├── config.js       # apiUrl (gitignored)
