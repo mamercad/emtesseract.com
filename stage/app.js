@@ -165,11 +165,16 @@
                 const draft = s.result?.draft;
                 const analysis = s.result?.analysis;
                 const content = draft ?? analysis;
+                const artifactId = s.result?.artifact_id;
+                const artifactLink = artifactId
+                  ? `<a href="/stage/artifacts.html?id=${artifactId}" class="mission-step__artifact-link">View/Edit doc</a>`
+                  : "";
                 return `<div class="mission-step">
                 <span class="mission-step__status mission-step__status--${s.status}"></span>
                 <span class="mission-step__kind">${escapeHtml(s.kind)}</span>
                 <span>${s.status}</span>
                 ${content ? `<div class="mission-step__result">${escapeHtml(content)}</div>` : ""}
+                ${artifactLink}
               </div>`;
               })
               .join("")}

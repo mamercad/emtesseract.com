@@ -121,6 +121,54 @@ export async function createProposal({ agentId, title, proposedSteps }) {
   return { accepted: false, proposalId: prop.id, reason: "pending_review" };
 }
 
+// ── Manual approval / rejection ────────────────────────────
+
+export async function acceptProposal(proposalId) {
+  const { rows: prop, error } = await query(
+    "SELECT id, agent_id, title, status, proposed_steps FROM ops_mission_proposals WHERE id = $1",
+    [proposalId]
+  );
+  if (error || !prop?.length) throw new Error("Proposal not found");
+  const p = prop[0];
+  if (p.status !== "pending") throw new Error(`Proposal not pending (status: ${p.status})`);
+
+  const proposedSteps = typeof p.proposed_steps === "string" ? JSON.parse(p.proposed_steps) : p.proposed_steps ?? [];
+  const gateResult = await checkGates(proposedSteps);
+  if (!gateResult.ok) {
+    await query(
+      "UPDATE ops_mission_proposals SET status = 'rejected', rejection_reason = $1, updated_at = $2 WHERE id = $3",
+      [gateResult.reason, new Date().toISOString(), proposalId]
+    );
+    await emitEvent(p.agent_id, "proposal_rejected", p.title, gateResult.reason);
+    return { accepted: false, reason: gateResult.reason };
+  }
+
+  await query(
+    "UPDATE ops_mission_proposals SET status = 'accepted', updated_at = $1 WHERE id = $2",
+    [new Date().toISOString(), proposalId]
+  );
+  const mission = await createMissionFromProposal(p.id, p.agent_id, p.title, proposedSteps);
+  await emitEvent(p.agent_id, "proposal_accepted", p.title, `Manual approval → mission ${mission.id}`);
+  return { accepted: true, missionId: mission.id };
+}
+
+export async function rejectProposal(proposalId, reason = "") {
+  const { rows: prop, error } = await query(
+    "SELECT id, agent_id, title, status FROM ops_mission_proposals WHERE id = $1",
+    [proposalId]
+  );
+  if (error || !prop?.length) throw new Error("Proposal not found");
+  const p = prop[0];
+  if (p.status !== "pending") throw new Error(`Proposal not pending (status: ${p.status})`);
+
+  await query(
+    "UPDATE ops_mission_proposals SET status = 'rejected', rejection_reason = $1, updated_at = $2 WHERE id = $3",
+    [reason || "Rejected by operator", new Date().toISOString(), proposalId]
+  );
+  await emitEvent(p.agent_id, "proposal_rejected", p.title, reason || "Rejected by operator");
+  return { accepted: false, reason: reason || "Rejected by operator" };
+}
+
 // ── Mission creation ───────────────────────────────────────
 
 async function createMissionFromProposal(proposalId, agentId, title, proposedSteps) {

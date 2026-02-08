@@ -27,6 +27,14 @@
       link = `<a href="/stage/#mission-${item.mission_id}" class="swimlane-card__link">View in Stage</a>`;
     }
 
+    let actions = "";
+    if (item.type === "proposal") {
+      actions = `<div class="swimlane-card__actions">
+        <button type="button" class="swimlane-card__btn swimlane-card__btn--approve" data-proposal-id="${item.id}">Approve</button>
+        <button type="button" class="swimlane-card__btn swimlane-card__btn--reject" data-proposal-id="${item.id}">Reject</button>
+      </div>`;
+    }
+
     const taskId = item.mission_id || item.proposal_id || item.id;
     const shortId = taskId ? String(taskId).slice(0, 8) : "";
     card.innerHTML = `
@@ -35,9 +43,22 @@
       <h4 class="swimlane-card__title">${escapeHtml(item.title)}</h4>
       ${item.steps_summary ? `<span class="swimlane-card__steps">${escapeHtml(item.steps_summary)}</span>` : ""}
       <span class="swimlane-card__time">${formatTime(item.created_at)}</span>
+      ${actions}
       ${link}
     `;
     return card;
+  }
+
+  async function handleProposalAction(proposalId, action) {
+    const base = apiUrl || "";
+    const url = action === "approve"
+      ? `${base}/api/proposals/${proposalId}/approve`
+      : `${base}/api/proposals/${proposalId}/reject`;
+    const body = action === "reject" ? JSON.stringify({ reason: prompt("Reject reason (optional):") || "" }) : undefined;
+    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    loadWorkItems();
   }
 
   async function loadWorkItems() {
@@ -119,6 +140,19 @@
       $empty.textContent = "Failed to load work items.";
     }
   }
+
+  $board?.addEventListener("click", (e) => {
+    const btn = e.target.closest(".swimlane-card__btn--approve, .swimlane-card__btn--reject");
+    if (!btn) return;
+    const proposalId = btn.dataset.proposalId;
+    if (!proposalId) return;
+    btn.disabled = true;
+    const action = btn.classList.contains("swimlane-card__btn--approve") ? "approve" : "reject";
+    handleProposalAction(proposalId, action).catch((err) => {
+      alert(err.message || "Action failed");
+      btn.disabled = false;
+    });
+  });
 
   loadWorkItems();
   installVisibilityPolling(loadWorkItems, 15000);

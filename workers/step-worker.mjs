@@ -59,14 +59,46 @@ async function executeStep(step, mission) {
 
   if (kind === "write_content") {
     const topic = payload.topic || payload.brief || "company update";
-    const reply = await complete([
-      {
-        role: "user",
-        content: `You are the content writer at emTesseract, a family game development company.${memoryContext}\nWrite a short draft (2–4 sentences) for: "${topic}". Tone: engaging, clear, on-brand.`,
-      },
-    ]);
+    const artifactId = payload.artifact_id || null;
+    let prompt = `You are the content writer at emTesseract, a family game development company.${memoryContext}\n`;
+    let existingContent = "";
+
+    if (artifactId) {
+      const { rows: art } = await query(
+        "SELECT content FROM ops_artifacts WHERE id = $1",
+        [artifactId]
+      );
+      if (art?.length && art[0].content) {
+        existingContent = art[0].content;
+        prompt += `Revise this draft (keep it 2–4 sentences, engaging, on-brand):\n\n---\n${existingContent}\n---\n\nTopic: "${topic}". Write the improved version:`;
+      }
+    }
+    if (!existingContent) {
+      prompt += `Write a short draft (2–4 sentences) for: "${topic}". Tone: engaging, clear, on-brand.`;
+    }
+
+    const reply = await complete([{ role: "user", content: prompt }]);
+
+    let finalArtifactId = artifactId;
+    const missionId = step.mission_id;
+    const title = (mission?.title || topic || "Draft").slice(0, 200);
+
+    if (artifactId) {
+      await query(
+        `UPDATE ops_artifacts SET content = $1, updated_by = $2, updated_at = $3 WHERE id = $4`,
+        [reply, agentId, new Date().toISOString(), artifactId]
+      );
+    } else {
+      const { rows: ins } = await query(
+        `INSERT INTO ops_artifacts (title, content, mission_id, step_id, updated_by, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        [title, reply, missionId, step.id, agentId, new Date().toISOString()]
+      );
+      finalArtifactId = ins?.[0]?.id;
+    }
+
     return {
-      result: { draft: reply },
+      result: { draft: reply, artifact_id: finalArtifactId },
       event: { kind: "write_content_complete", title: `Draft: ${topic}`, summary: reply.slice(0, 200) },
     };
   }

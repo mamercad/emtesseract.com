@@ -10,19 +10,24 @@ import pg from "pg";
 const DATABASE_URL = process.env.DATABASE_URL;
 const hasDb = DATABASE_URL && DATABASE_URL.startsWith("postgres");
 
-async function createProposalAsync() {
+async function loadProposalService() {
   const mod = await import("../../workers/lib/proposal-service.mjs");
-  return mod.createProposal;
+  return mod;
 }
 
 describe("proposal-service integration", { skip: !hasDb }, () => {
   let pool;
   let createProposal;
+  let acceptProposal;
+  let rejectProposal;
 
   before(async () => {
     if (!hasDb) return;
     pool = new pg.Pool({ connectionString: DATABASE_URL });
-    createProposal = await createProposalAsync();
+    const svc = await loadProposalService();
+    createProposal = svc.createProposal;
+    acceptProposal = svc.acceptProposal;
+    rejectProposal = svc.rejectProposal;
   });
 
   after(async () => {
@@ -76,5 +81,80 @@ describe("proposal-service integration", { skip: !hasDb }, () => {
     // Cleanup
     await pool.query("DELETE FROM ops_mission_steps WHERE mission_id = $1", [missionId]);
     await pool.query("DELETE FROM ops_missions WHERE id = $1", [missionId]);
+  });
+
+  it("acceptProposal accepts pending proposal and creates mission", async () => {
+    const { rows: inserted } = await pool.query(
+      `INSERT INTO ops_mission_proposals (agent_id, title, status, proposed_steps)
+       VALUES ('test-agent', '[test] Manual approval', 'pending', $1)
+       RETURNING id`,
+      [JSON.stringify([{ kind: "analyze", payload: { topic: "accept test" } }])]
+    );
+    const proposalId = inserted[0].id;
+
+    const result = await acceptProposal(proposalId);
+
+    assert.strictEqual(result.accepted, true);
+    assert.ok(result.missionId, "missionId should be set");
+
+    const { rows: missions } = await pool.query(
+      "SELECT id FROM ops_missions WHERE proposal_id = $1",
+      [proposalId]
+    );
+    assert.strictEqual(missions.length, 1);
+    assert.strictEqual(missions[0].id, result.missionId);
+
+    const { rows: steps } = await pool.query(
+      "SELECT kind FROM ops_mission_steps WHERE mission_id = $1",
+      [result.missionId]
+    );
+    assert.strictEqual(steps.length, 1);
+    assert.strictEqual(steps[0].kind, "analyze");
+
+    await pool.query("DELETE FROM ops_mission_steps WHERE mission_id = $1", [result.missionId]);
+    await pool.query("DELETE FROM ops_missions WHERE id = $1", [result.missionId]);
+    await pool.query("DELETE FROM ops_mission_proposals WHERE id = $1", [proposalId]);
+  });
+
+  it("rejectProposal rejects pending proposal", async () => {
+    const { rows: inserted } = await pool.query(
+      `INSERT INTO ops_mission_proposals (agent_id, title, status, proposed_steps)
+       VALUES ('test-agent', '[test] Manual reject', 'pending', $1)
+       RETURNING id`,
+      [JSON.stringify([{ kind: "analyze", payload: { topic: "reject test" } }])]
+    );
+    const proposalId = inserted[0].id;
+
+    const result = await rejectProposal(proposalId, "Not needed");
+
+    assert.strictEqual(result.accepted, false);
+    assert.ok(result.reason?.includes("Not needed") || result.reason?.includes("Rejected"));
+
+    const { rows: prop } = await pool.query(
+      "SELECT status, rejection_reason FROM ops_mission_proposals WHERE id = $1",
+      [proposalId]
+    );
+    assert.strictEqual(prop.length, 1);
+    assert.strictEqual(prop[0].status, "rejected");
+    assert.ok(prop[0].rejection_reason?.includes("Not needed"));
+
+    await pool.query("DELETE FROM ops_mission_proposals WHERE id = $1", [proposalId]);
+  });
+
+  it("acceptProposal throws for non-pending proposal", async () => {
+    const { rows: inserted } = await pool.query(
+      `INSERT INTO ops_mission_proposals (agent_id, title, status, proposed_steps)
+       VALUES ('test-agent', '[test] Already accepted', 'accepted', $1)
+       RETURNING id`,
+      [JSON.stringify([{ kind: "analyze", payload: {} }])]
+    );
+    const proposalId = inserted[0].id;
+
+    await assert.rejects(
+      () => acceptProposal(proposalId),
+      /not pending/i
+    );
+
+    await pool.query("DELETE FROM ops_mission_proposals WHERE id = $1", [proposalId]);
   });
 });

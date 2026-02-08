@@ -8,7 +8,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
-import { createProposal } from "../workers/lib/proposal-service.mjs";
+import { createProposal, acceptProposal, rejectProposal } from "../workers/lib/proposal-service.mjs";
 import { complete } from "../workers/lib/llm.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -204,6 +204,31 @@ async function handleApi(pathname, searchParams) {
     return { data: rows[0] };
   }
 
+  /* Artifacts — shared markdown documents */
+  if (pathname === "/api/artifacts") {
+    const missionId = searchParams.get("mission_id") || "";
+    let sql = "SELECT id, title, content, mission_id, step_id, updated_by, created_at, updated_at FROM ops_artifacts";
+    const params = [];
+    if (missionId) {
+      sql += " WHERE mission_id = $1";
+      params.push(missionId);
+    }
+    sql += " ORDER BY updated_at DESC LIMIT 50";
+    const { rows } = await pool.query(sql, params);
+    return { data: rows ?? [] };
+  }
+
+  const artifactMatch = pathname.match(/^\/api\/artifacts\/([0-9a-f-]{36})$/);
+  if (artifactMatch) {
+    const id = artifactMatch[1];
+    const { rows } = await pool.query(
+      "SELECT id, title, content, mission_id, step_id, updated_by, created_at, updated_at FROM ops_artifacts WHERE id = $1",
+      [id]
+    );
+    if (!rows?.length) return null;
+    return { data: rows[0] };
+  }
+
   return null;
 }
 
@@ -361,6 +386,9 @@ async function handler(req, res) {
   const pathname = url.pathname;
 
   if (pathname.startsWith("/api/")) {
+    const proposalApproveMatch = pathname.match(/^\/api\/proposals\/([0-9a-f-]{36})\/approve$/);
+    const proposalRejectMatch = pathname.match(/^\/api\/proposals\/([0-9a-f-]{36})\/reject$/);
+
     if (req.method === "POST" && pathname === "/api/proposals") {
       try {
         const body = await readJsonBody(req);
@@ -374,6 +402,34 @@ async function handler(req, res) {
       return;
     }
 
+    if (req.method === "POST" && proposalApproveMatch) {
+      try {
+        const proposalId = proposalApproveMatch[1];
+        const result = await acceptProposal(proposalId);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(result));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || "Approval failed" }));
+      }
+      return;
+    }
+
+    if (req.method === "POST" && proposalRejectMatch) {
+      try {
+        const proposalId = proposalRejectMatch[1];
+        const body = await readJsonBody(req);
+        const reason = body?.reason ?? "";
+        const result = await rejectProposal(proposalId, reason);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(result));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || "Rejection failed" }));
+      }
+      return;
+    }
+
     if (req.method === "POST" && pathname === "/api/chat") {
       try {
         const body = await readJsonBody(req);
@@ -383,6 +439,34 @@ async function handler(req, res) {
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: err.message || "Chat failed" }));
+      }
+      return;
+    }
+
+    const artifactPatchMatch = pathname.match(/^\/api\/artifacts\/([0-9a-f-]{36})$/);
+    if (req.method === "PATCH" && artifactPatchMatch) {
+      try {
+        const id = artifactPatchMatch[1];
+        const body = await readJsonBody(req);
+        const content = typeof body?.content === "string" ? body.content : "";
+        const { rowCount } = await pool.query(
+          `UPDATE ops_artifacts SET content = $1, updated_by = 'operator', updated_at = $2 WHERE id = $3`,
+          [content, new Date().toISOString(), id]
+        );
+        if (rowCount === 0) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Artifact not found" }));
+          return;
+        }
+        const { rows } = await pool.query(
+          "SELECT id, title, content, mission_id, step_id, updated_by, created_at, updated_at FROM ops_artifacts WHERE id = $1",
+          [id]
+        );
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ data: rows[0] }));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || "Update failed" }));
       }
       return;
     }
