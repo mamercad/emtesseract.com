@@ -167,8 +167,15 @@ main {
 }
 
 @keyframes hero-bounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-6px) scale(1.02); }
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-6px) scale(1.02);
+  }
 }
 
 .hero__content {
@@ -251,6 +258,7 @@ main {
     opacity: 0;
     transform: translateY(24px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -318,9 +326,17 @@ section {
   height: 4px;
 }
 
-.vision__card:nth-child(1)::before { background: var(--accent); }
-.vision__card:nth-child(2)::before { background: var(--accent-pop); }
-.vision__card:nth-child(3)::before { background: var(--accent-warm); }
+.vision__card:nth-child(1)::before {
+  background: var(--accent);
+}
+
+.vision__card:nth-child(2)::before {
+  background: var(--accent-pop);
+}
+
+.vision__card:nth-child(3)::before {
+  background: var(--accent-warm);
+}
 
 [data-theme="dark"] .vision__card {
   border-color: var(--text-300);
@@ -382,12 +398,29 @@ section {
   border-color: var(--text-300);
 }
 
-.game-card:nth-child(1)::before { background: var(--accent); }
-.game-card:nth-child(2)::before { background: var(--accent-pop); }
-.game-card:nth-child(3)::before { background: var(--accent-warm); }
-.game-card:nth-child(4)::before { background: #22c55e; }
-.game-card:nth-child(5)::before { background: #a855f7; }
-.game-card:nth-child(6)::before { background: var(--text-300); }
+.game-card:nth-child(1)::before {
+  background: var(--accent);
+}
+
+.game-card:nth-child(2)::before {
+  background: var(--accent-pop);
+}
+
+.game-card:nth-child(3)::before {
+  background: var(--accent-warm);
+}
+
+.game-card:nth-child(4)::before {
+  background: #22c55e;
+}
+
+.game-card:nth-child(5)::before {
+  background: #a855f7;
+}
+
+.game-card:nth-child(6)::before {
+  background: var(--text-300);
+}
 
 .game-card:hover {
   transform: translateY(-6px) translateX(4px);
