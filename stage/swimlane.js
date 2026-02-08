@@ -3,28 +3,12 @@
  * Fetches work items from /api/ops_work_items, renders cards in columns by stage
  */
 (function () {
+  const { escapeHtml, formatTime, installVisibilityPolling } = window.STAGE_UTILS;
   const config = window.STAGE_CONFIG || {};
   const apiUrl = (config.apiUrl ?? "").replace(/\/$/, "");
 
   const $board = document.getElementById("swimlane-board");
   const $empty = document.getElementById("swimlane-empty");
-
-  function escapeHtml(s) {
-    if (!s) return "";
-    const div = document.createElement("div");
-    div.textContent = s;
-    return div.innerHTML;
-  }
-
-  function formatTime(iso) {
-    const d = new Date(iso);
-    const now = new Date();
-    const diff = now - d;
-    if (diff < 60000) return "now";
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
-    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  }
 
   function roleToColor(agent) {
     const map = { coordinator: "pending", executor: "ok", observer: "muted", writer: "ok" };
@@ -136,20 +120,6 @@
     }
   }
 
-  const POLL_MS = 15000;
-  let pollInterval;
-
-  function startPolling() {
-    if (!pollInterval) pollInterval = setInterval(loadWorkItems, POLL_MS);
-  }
-  function stopPolling() {
-    if (pollInterval) clearInterval(pollInterval);
-    pollInterval = null;
-  }
-  document.addEventListener("visibilitychange", () => {
-    document.hidden ? stopPolling() : startPolling();
-  });
-
   loadWorkItems();
-  startPolling();
+  installVisibilityPolling(loadWorkItems, 15000);
 })();

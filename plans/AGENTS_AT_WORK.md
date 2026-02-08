@@ -5,13 +5,13 @@
 | Migrations | ✅ Done | 001–014 applied |
 | Proposal service | ✅ Done | Cap gates, auto-approve |
 | Heartbeat | ✅ Done | Triggers, reactions, recovery |
-| Seed scripts | ⏳ Pending | Trigger rule (SQL in SETUP.md) |
-| Stage frontend | ✅ Done | Signal feed, missions, filters |
-| Step worker | ✅ Done | Ollama-based, analyzes steps |
+| Seed scripts | ✅ Done | `make deploy` runs seed; bootstrap observer trigger |
+| Stage frontend | ✅ Done | Feed, missions, swimlane, Give task, task IDs, flicker-free refresh |
+| Step worker | ✅ Done | Ollama-based, analyze + write_content |
 | Roundtable worker | ⏳ Pending | Conversation orchestration |
 | Domain workers | ⏳ Pending | x-autopost, content, crawl |
 
-**MVP:** Ollama on Boomer + step worker. See `SETUP.md`.
+**MVP:** Ollama on Boomer + step worker + seed. See `SETUP.md`, `docs/SEED_TRIGGERS.md`, `docs/STAGE_UI.md`.
 
 ---
 

@@ -3,6 +3,7 @@
  * Fetches events and missions from local API (replaces Supabase)
  */
 (function () {
+  const { escapeHtml, formatTime, installVisibilityPolling } = window.STAGE_UTILS;
   const config = window.STAGE_CONFIG || {};
   const apiUrl = (config.apiUrl ?? "").replace(/\/$/, "");
   const needsSetup = false; // empty apiUrl = same origin (relative fetch)
@@ -252,25 +253,6 @@
     }
   }
 
-  // ── Helpers ───────────────────────────────────────────────
-
-  function escapeHtml(s) {
-    if (!s) return "";
-    const div = document.createElement("div");
-    div.textContent = s;
-    return div.innerHTML;
-  }
-
-  function formatTime(iso) {
-    const d = new Date(iso);
-    const now = new Date();
-    const diff = now - d;
-    if (diff < 60000) return "now";
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
-    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  }
-
   // ── Give task ──────────────────────────────────────────────
 
   function setupGiveTask() {
@@ -353,25 +335,8 @@
     setupGiveTask();
 
     // Poll when visible; pause when tab hidden (flicker-free incremental updates)
-    const POLL_EVENTS_MS = 10000;
-    const POLL_MISSIONS_MS = 20000;
-    let eventsInterval;
-    let missionsInterval;
-
-    function startPolling() {
-      if (!eventsInterval) eventsInterval = setInterval(() => loadEvents(), POLL_EVENTS_MS);
-      if (!missionsInterval) missionsInterval = setInterval(loadMissions, POLL_MISSIONS_MS);
-    }
-    function stopPolling() {
-      if (eventsInterval) clearInterval(eventsInterval);
-      eventsInterval = null;
-      if (missionsInterval) clearInterval(missionsInterval);
-      missionsInterval = null;
-    }
-    document.addEventListener("visibilitychange", () => {
-      document.hidden ? stopPolling() : startPolling();
-    });
-    startPolling();
+    installVisibilityPolling(() => loadEvents(), 10000);
+    installVisibilityPolling(loadMissions, 20000);
   }
 
   init();
