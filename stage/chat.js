@@ -43,7 +43,14 @@
   async function fetchApi(path, opts = {}) {
     const url = apiUrl + path;
     const res = await fetch(url, opts);
-    if (!res.ok) throw new Error(res.statusText || `HTTP ${res.status}`);
+    if (!res.ok) {
+      let msg = res.statusText || `HTTP ${res.status}`;
+      try {
+        const body = await res.json();
+        if (body?.error) msg = body.error;
+      } catch (_) {}
+      throw new Error(msg);
+    }
     return res.json();
   }
 
@@ -154,25 +161,27 @@
     }
   }
 
-  async function sendMessage() {
-    const text = ($input?.value || "").trim();
+  /** @param {string|null} [retryText] — When set, retries with a new session (clears stale session_id). */
+  async function sendMessage(retryText = null) {
+    const text = retryText ?? ($input?.value ?? "").trim();
     if (!text || !selectedAgentId || isSending) return;
 
-    $input.value = "";
     isSending = true;
     $send.disabled = true;
+    const useSessionId = retryText ? null : sessionId;
 
     try {
       const { session_id: sid } = await fetchApi("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          session_id: sessionId || undefined,
+          session_id: useSessionId || undefined,
           agent_id: selectedAgentId,
           content: text,
         }),
       });
 
+      $input.value = "";
       sessionId = sid;
       setSessionId(selectedAgentId, sid);
 
@@ -181,7 +190,13 @@
 
       pollTimer = setInterval(pollForResponse, POLL_INTERVAL_MS);
     } catch (err) {
+      if (!retryText && err.message?.includes("Invalid session_id")) {
+        setSessionId(selectedAgentId, null);
+        sessionId = null;
+        return sendMessage(text);
+      }
       appendMessageDom("assistant", `Error: ${err.message}`, selectedAgentId, false);
+      $input.value = text;
       isSending = false;
       $send.disabled = !selectedAgentId;
     }

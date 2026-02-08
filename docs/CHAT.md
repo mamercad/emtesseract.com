@@ -11,6 +11,11 @@ Stage chat UI for human-in-the-loop conversations with emTesseract agents. Uses 
 5. Polling pauses when tab is hidden; resumes on focus.
 6. History persists in DB; returning to chat loads from server.
 
+## Error Handling
+
+- **API errors**: Client parses `{ error: "..." }` from 4xx/5xx responses and displays the server message instead of generic status text.
+- **Invalid session_id**: If the server returns "Invalid session_id for agent" (e.g. stale localStorage after DB reset), the client clears the stored session and retries once with a new session. The user's message is preserved and sent successfully.
+
 ## API
 
 | Method | Path | Description |
