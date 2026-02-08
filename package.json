@@ -5,7 +5,7 @@
     "deploy": "npx wrangler deploy",
     "preview": "npx wrangler dev",
     "lint": "npm run lint:md && npm run lint:css",
-    "lint:md": "markdownlint --ignore node_modules '*.md'",
+    "lint:md": "markdownlint --ignore node_modules \"**/*.md\"",
     "lint:css": "stylelint \"**/*.css\"",
     "test": "html-validate index.html 404.html"
   },
