@@ -274,8 +274,10 @@ async function handlePostChat(body, pool) {
   );
   const llmMessages = [{ role: "system", content: systemPrompt }];
   for (const m of history || []) {
-    if (m.role && (m.content || m.role === "user")) {
-      llmMessages.push({ role: m.role, content: String(m.content || "") });
+    if (m?.role && typeof m.role === "string") {
+      const content = m.content;
+      const contentStr = typeof content === "string" ? content : String(content ?? "");
+      llmMessages.push({ role: m.role, content: contentStr });
     }
   }
 

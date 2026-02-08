@@ -11,9 +11,27 @@ const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3.2";
  * @returns {Promise<string>} Assistant reply text
  */
 export async function complete(messages, options = {}) {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    throw new Error("messages array required");
+  }
+  const normalized = messages.map((m) => ({
+    role: m?.role ?? "user",
+    content: toContentString(m?.content),
+  }));
+
+  function toContentString(content) {
+    if (typeof content === "string") return content;
+    if (Array.isArray(content)) {
+      return content
+        .map((p) => (typeof p?.text === "string" ? p.text : typeof p === "string" ? p : ""))
+        .filter(Boolean)
+        .join("\n");
+    }
+    return String(content ?? "");
+  }
   const body = {
     model: OLLAMA_MODEL,
-    messages,
+    messages: normalized,
     stream: false,
   };
   if (options.temperature != null) body.temperature = options.temperature;
