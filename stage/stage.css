@@ -92,6 +92,140 @@
   }
 }
 
+/* Mobile responsive (640px and below) */
+@media (max-width: 640px) {
+  /* Header — tighter padding, nav wraps */
+  .stage-header {
+    padding: var(--space-md) var(--space-md);
+  }
+
+  .stage-header__inner {
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .stage-nav {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+  }
+
+  .stage-nav a {
+    font-size: 0.875rem;
+  }
+
+  /* Theme toggle — icon only on very small screens to save space */
+  @media (max-width: 380px) {
+    .theme-toggle__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+
+  /* Main — reduced padding */
+  .stage-main {
+    padding: var(--space-md);
+    gap: var(--space-lg);
+    min-height: calc(100vh - 70px);
+  }
+
+  /* Feed header — stack title above filters */
+  .stage-feed__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+
+  .stage-filters {
+    flex-wrap: wrap;
+  }
+
+  .stage-filters select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Feed list — taller min-height for mobile scroll */
+  .feed-list {
+    min-height: 240px;
+    max-height: 50vh;
+  }
+
+  /* Feed items — wrap metadata, content on own row */
+  .feed-item {
+    flex-wrap: wrap;
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .feed-item__id {
+    display: none;
+  }
+
+  .feed-item__content {
+    flex: 1 1 100%;
+    order: 10;
+  }
+
+  /* Give task form — stack inputs, full width */
+  .give-task-form form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .give-task-form input[type="text"] {
+    min-width: 0;
+  }
+
+  /* Missions list — reduce max-height for mobile */
+  .missions-list {
+    max-height: 50vh;
+  }
+
+  /* Setup overlay — margin on small screens */
+  .stage-setup__card {
+    margin: var(--space-md);
+    max-width: calc(100% - var(--space-xl));
+  }
+
+  /* Swimlane — reduced padding */
+  .swimlane-main {
+    padding: var(--space-md);
+  }
+
+  .swimlane-board {
+    gap: var(--space-sm);
+  }
+
+  .swimlane-column {
+    min-height: 200px;
+  }
+
+  /* Chat — tighter layout */
+  .chat-main {
+    padding: var(--space-md);
+  }
+
+  .chat-msg__bubble {
+    max-width: 92%;
+  }
+
+  .chat-input-form {
+    flex-direction: row;
+    gap: var(--space-sm);
+  }
+
+  .chat-input-form textarea {
+    min-height: 44px;
+  }
+}
+
 /* Sidebar — agents */
 .stage-sidebar {
   padding-top: var(--space-md);
