@@ -6,6 +6,7 @@
   const { escapeHtml } = window.STAGE_UTILS;
   const config = window.STAGE_CONFIG || {};
   const apiUrl = (config.apiUrl ?? "").replace(/\/$/, "");
+  const CHAT_STORAGE_KEY = "emtesseract-chat";
 
   const $agentsList = document.getElementById("chat-agents-list");
   const $messages = document.getElementById("chat-messages");
@@ -18,6 +19,25 @@
   let selectedAgentId = null;
   let messages = [];
   let isSending = false;
+
+  function loadHistory(agentId) {
+    try {
+      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+      const data = raw ? JSON.parse(raw) : {};
+      return Array.isArray(data[agentId]) ? data[agentId] : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveHistory(agentId, msgs) {
+    try {
+      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+      const data = raw ? JSON.parse(raw) : {};
+      data[agentId] = msgs;
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data));
+    } catch (_) {}
+  }
 
   async function fetchApi(path, opts = {}) {
     const url = apiUrl + path;
@@ -60,12 +80,24 @@
     selectedAgentId = id;
     $send.disabled = !id;
     $input.disabled = !id;
+    messages = loadHistory(id);
+    renderMessages();
     renderAgents();
   }
 
-  function appendMessage(role, content, agentId) {
-    const msg = { role, content, agentId };
-    messages.push(msg);
+  function renderMessages() {
+    $messages.querySelectorAll(".chat-msg").forEach((el) => el.remove());
+    $welcome.hidden = messages.length > 0;
+    messages.forEach((m) => appendMessage(m.role, m.content, m.agentId || selectedAgentId, true));
+    if (messages.length) $messages.scrollTop = $messages.scrollHeight;
+  }
+
+  function appendMessage(role, content, agentId, skipPush) {
+    if (!skipPush) {
+      const msg = { role, content, agentId };
+      messages.push(msg);
+      if (selectedAgentId) saveHistory(selectedAgentId, messages);
+    }
     const el = document.createElement("div");
     el.className = `chat-msg chat-msg--${role}`;
     el.setAttribute("data-role", role);
@@ -105,7 +137,7 @@
     if (!text || !selectedAgentId || isSending) return;
 
     $input.value = "";
-    appendMessage("user", text);
+    appendMessage("user", text, selectedAgentId);
     appendPlaceholder();
     isSending = true;
     $send.disabled = true;
