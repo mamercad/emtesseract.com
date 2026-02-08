@@ -4,8 +4,8 @@
  */
 (function () {
   const config = window.STAGE_CONFIG || {};
-  const apiUrl = (config.apiUrl || "").replace(/\/$/, "");
-  const needsSetup = !apiUrl;
+  const apiUrl = (config.apiUrl ?? "").replace(/\/$/, "");
+  const needsSetup = false; // empty apiUrl = same origin (relative fetch)
 
   if (needsSetup) {
     document.getElementById("stage-setup").hidden = false;

@@ -1,7 +1,6 @@
 /**
- * Stage config — API base URL for local hosting.
- * Copy to config.js and set apiUrl to your Stage API server.
+ * Stage config — API base URL. Empty = same origin (works at any host:port).
  */
 window.STAGE_CONFIG = {
-  apiUrl: "http://localhost:8788",
+  apiUrl: "",
 };
