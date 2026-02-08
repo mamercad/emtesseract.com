@@ -18,7 +18,10 @@ if [[ -f "$PROJECT_ROOT/.env" ]]; then
   set +H
   set -a
   while IFS= read -r line; do
-    [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] && export "$line"
+    line="${line%%[[:space:]]*}"
+    if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      export "${BASH_REMATCH[1]}=${BASH_REMATCH[2]}"
+    fi
   done < <(grep -v '^#' "$PROJECT_ROOT/.env" | grep -v '^$')
   set +a
   set -H 2>/dev/null || true
@@ -26,13 +29,17 @@ fi
 
 # ── psql path (preferred) ────────────────────────────────────
 if [[ -n "${DATABASE_URL:-}" ]]; then
+  if [[ ! "$DATABASE_URL" =~ ^postgres(ql)?:// ]]; then
+    echo "ERROR: DATABASE_URL must be a postgresql:// URI" >&2
+    exit 1
+  fi
   if ! command -v psql &>/dev/null; then
     echo "ERROR: DATABASE_URL set but psql not installed" >&2
     echo "Install: sudo apt install postgresql-client" >&2
     exit 1
   fi
 
-  echo "Running migrations via psql"
+  echo "Running migrations via psql (.env from $PROJECT_ROOT)"
   echo "──────────────────────────────────────────"
 
   FAILED=0
@@ -51,6 +58,9 @@ if [[ -n "${DATABASE_URL:-}" ]]; then
     else
       echo "FAILED"
       echo "$err" | head -5 | sed 's/^/    /'
+      if [[ "$err" == *"socket"* ]]; then
+        echo "    Hint: DATABASE_URL may be empty or invalid. Check .env and connection string format."
+      fi
       FAILED=$((FAILED + 1))
     fi
   done
