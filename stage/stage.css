@@ -1450,3 +1450,136 @@
 .artifacts-editor__status--error {
   color: var(--stage-accent-fail);
 }
+
+/* Settings */
+.stage-page--settings .stage-main {
+  grid-template-columns: 1fr;
+}
+
+.settings-main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+.settings-title {
+  margin: 0 0 var(--space-xs);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--text-100);
+}
+
+.settings-desc {
+  margin: 0 0 var(--space-xl);
+  font-size: 0.9375rem;
+  color: var(--text-300);
+}
+
+.settings-loading {
+  padding: var(--space-lg);
+  color: var(--text-300);
+}
+
+.settings-error {
+  padding: var(--space-lg);
+  color: var(--stage-accent-fail);
+}
+
+.settings-panels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.settings-panel {
+  padding: var(--space-lg);
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-md);
+}
+
+.settings-panel__title {
+  margin: 0 0 var(--space-xs);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text-100);
+}
+
+.settings-panel__desc {
+  margin: 0 0 var(--space-md);
+  font-size: 0.875rem;
+  color: var(--text-300);
+}
+
+.settings-panel__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.settings-field--checkbox {
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-field--checkbox input {
+  width: auto;
+  margin-right: var(--space-sm);
+}
+
+.settings-field__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-200);
+}
+
+.settings-field input[type="number"] {
+  max-width: 120px;
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.9375rem;
+  background: var(--bg);
+  border: var(--stage-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-200);
+}
+
+.settings-panel__save {
+  padding: var(--space-xs) var(--space-lg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.settings-panel__save:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.settings-panel__save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.settings-panel__status {
+  margin-left: var(--space-md);
+  font-size: 0.8rem;
+}
+
+.settings-panel__status--ok {
+  color: var(--stage-accent-ok);
+}
+
+.settings-panel__status--error {
+  color: var(--stage-accent-fail);
+}

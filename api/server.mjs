@@ -49,6 +49,17 @@ const MIME = {
 };
 
 async function handleApi(pathname, searchParams) {
+  if (pathname === "/api/ops_policy") {
+    const { rows } = await pool.query(
+      "SELECT key, value, updated_at FROM ops_policy ORDER BY key"
+    );
+    const policy = {};
+    for (const r of rows ?? []) {
+      policy[r.key] = { ...r.value, _updated_at: r.updated_at };
+    }
+    return { data: policy };
+  }
+
   if (pathname === "/api/ops_agents") {
     const { rows } = await pool.query(
       "SELECT id, display_name, role FROM ops_agents WHERE enabled = true"
@@ -439,6 +450,53 @@ async function handler(req, res) {
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: err.message || "Chat failed" }));
+      }
+      return;
+    }
+
+    const policyPatchMatch = pathname.match(/^\/api\/ops_policy\/([a-z_]+)$/);
+    if (req.method === "PATCH" && policyPatchMatch) {
+      try {
+        const key = policyPatchMatch[1];
+        const body = await readJsonBody(req);
+        const value = body?.value;
+        if (!value || typeof value !== "object") {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "body.value (object) required" }));
+          return;
+        }
+        const allowKeys = [
+          "content_policy",
+          "auto_approve",
+          "x_daily_quota",
+          "roundtable_policy",
+          "memory_influence_policy",
+          "relationship_drift_policy",
+          "initiative_policy",
+        ];
+        if (!allowKeys.includes(key)) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: `Unknown policy key: ${key}` }));
+          return;
+        }
+        const { rowCount } = await pool.query(
+          `UPDATE ops_policy SET value = value || $1::jsonb, updated_at = $2 WHERE key = $3`,
+          [JSON.stringify(value), new Date().toISOString(), key]
+        );
+        if (rowCount === 0) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Policy not found" }));
+          return;
+        }
+        const { rows } = await pool.query(
+          "SELECT key, value, updated_at FROM ops_policy WHERE key = $1",
+          [key]
+        );
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ data: rows[0] }));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || "Update failed" }));
       }
       return;
     }
