@@ -1,4 +1,6 @@
 -- Seed default trigger rules (idempotent)
+-- The "Proactive analyze" rule is the bootstrap: without it, the system only works when you manually give tasks.
+-- See docs/SEED_TRIGGERS.md
 INSERT INTO ops_trigger_rules (name, trigger_event, action_config, cooldown_minutes, enabled)
 SELECT
   'Proactive analyze',

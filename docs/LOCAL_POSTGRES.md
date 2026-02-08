@@ -44,11 +44,13 @@ npm run migrate
 
 Migration 015 (RLS) is skipped automatically when `DATABASE_URL` does not contain `supabase`—local Postgres does not have the `anon` role.
 
-## 4. Seed trigger rule
+## 4. Seed agents and trigger rules
 
 ```bash
 npm run seed
 ```
+
+This seeds the bootstrap observer trigger so the system can self-start. See [SEED_TRIGGERS.md](SEED_TRIGGERS.md).
 
 ## 5. Run workers and API
 

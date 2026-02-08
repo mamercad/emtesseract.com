@@ -86,7 +86,7 @@ With Supabase, Stage uses the Supabase client. You would need to restore the Sup
 |------|------------------|
 | .env | DATABASE_URL, OLLAMA_BASE_URL, OLLAMA_MODEL |
 | Migrations | `npm run migrate` |
-| Seed | Insert trigger rule via psql |
+| Seed | `npm run seed` (agents + trigger rules; see [docs/SEED_TRIGGERS.md](docs/SEED_TRIGGERS.md)) |
 | Ollama | On Boomer: `ollama serve`, `ollama pull <model>` |
 | Heartbeat | `cd workers && npm run heartbeat` |
 | Step worker | `cd workers && npm run worker` (on Boomer) |
@@ -94,10 +94,14 @@ With Supabase, Stage uses the Supabase client. You would need to restore the Sup
 
 ---
 
+## Deploy (Boomer)
+
+`make deploy` runs: deps → migrate → **seed** → install. The seed step ensures the bootstrap observer trigger exists so the system can self-start. See [docs/SEED_TRIGGERS.md](docs/SEED_TRIGGERS.md).
+
 ## Troubleshooting
 
 - **Heartbeat fails:** Check `.env` is loaded (workers read from project root).
-- **No proposals:** Ensure `ops_trigger_rules` has at least one row with `enabled = true`.
+- **No proposals:** Run `npm run seed` to ensure `ops_trigger_rules` has the bootstrap observer trigger.
 - **Stage empty:** Ensure API server is running; set `apiUrl` in `stage/config.js`.
 - **Steps never run:** Step worker must be running; Ollama must be reachable at `OLLAMA_BASE_URL`.
 - **Ollama connection refused:** Ensure `ollama serve` on Boomer; if worker is remote, use `http://boomer:11434` or Boomer's IP.

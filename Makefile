@@ -4,9 +4,9 @@
 PROJECT_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 USER := $(shell whoami)
 
-.PHONY: deploy deploy-files install deps migrate status stop
+.PHONY: deploy deploy-files install deps migrate seed status stop
 
-# Deploy to Boomer: deps → migrate → install (chained).
+# Deploy to Boomer: deps → migrate → seed → install (chained).
 # Requires: sudo (for systemctl)
 deploy: install
 
@@ -18,8 +18,12 @@ deps:
 migrate: deps
 	npm run migrate
 
-# Install services (requires sudo). Prereqs: deploy-files, migrate
-install: deploy-files migrate
+# Seed agents and trigger rules (bootstrap observer). Idempotent. Depends on migrate.
+seed: migrate
+	npm run seed
+
+# Install services (requires sudo). Prereqs: deploy-files, migrate, seed
+install: deploy-files seed
 	sudo cp build/systemd/emtesseract-*.service /etc/systemd/system/
 	sudo systemctl daemon-reload
 	sudo systemctl enable emtesseract-heartbeat emtesseract-worker emtesseract-api
