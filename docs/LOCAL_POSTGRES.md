@@ -21,7 +21,7 @@ sudo -u postgres psql -c "CREATE DATABASE emtesseract_ops OWNER emtesseract;"
 
 **Note:** If your `pg_hba.conf` requires password auth for localhost, run:
 `sudo -u postgres psql -c "ALTER USER emtesseract WITH PASSWORD 'your-password';"`
-and use `postgresql://emtesseract:your-password@localhost:5432/emtesseract_ops` in `.env`.
+Then add to `.env`: `PGPASSWORD=your-password` (migrate uses it; no typing).
 
 ## 2. Configure .env
 
