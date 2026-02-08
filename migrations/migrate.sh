@@ -2,40 +2,70 @@
 # Run all SQL migrations against Supabase in order.
 # Usage: ./migrations/migrate.sh
 #
-# Requires:
-#   - SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env (or exported)
-#   - curl
+# Requires one of:
+#   A) DATABASE_URL (PostgreSQL connection URI) — uses psql (recommended)
+#   B) SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY — uses REST (often 404)
 #
-# Each migration is sent to the Supabase REST SQL endpoint.
-# Migrations are idempotent (CREATE IF NOT EXISTS / ON CONFLICT DO NOTHING).
+# Get DATABASE_URL: Supabase Dashboard → Project Settings → Database → Connection string (URI)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Load .env if it exists
+# Load .env if it exists (grep avoids source parsing issues with special chars)
 if [[ -f "$PROJECT_ROOT/.env" ]]; then
   set -a
-  # shellcheck source=/dev/null
-  source "$PROJECT_ROOT/.env"
+  while IFS= read -r line; do
+    [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] && export "$line"
+  done < <(grep -v '^#' "$PROJECT_ROOT/.env" | grep -v '^$')
   set +a
 fi
 
-# Validate required vars
-if [[ -z "${SUPABASE_URL:-}" ]]; then
-  echo "ERROR: SUPABASE_URL is not set" >&2
-  exit 1
+# ── psql path (preferred) ────────────────────────────────────
+if [[ -n "${DATABASE_URL:-}" ]]; then
+  if ! command -v psql &>/dev/null; then
+    echo "ERROR: DATABASE_URL set but psql not installed" >&2
+    echo "Install: sudo apt install postgresql-client" >&2
+    exit 1
+  fi
+
+  echo "Running migrations via psql"
+  echo "──────────────────────────────────────────"
+
+  FAILED=0
+  SUCCEEDED=0
+
+  for migration in "$SCRIPT_DIR"/[0-9]*.sql; do
+    name="$(basename "$migration")"
+    printf "  %-45s" "$name"
+    err=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration" 2>&1)
+    rc=$?
+    if [[ $rc -eq 0 ]]; then
+      echo "OK"
+      SUCCEEDED=$((SUCCEEDED + 1))
+    else
+      echo "FAILED"
+      echo "$err" | head -5 | sed 's/^/    /'
+      FAILED=$((FAILED + 1))
+    fi
+  done
+
+  echo "──────────────────────────────────────────"
+  echo "Done: $SUCCEEDED succeeded, $FAILED failed"
+  exit $((FAILED > 0 ? 1 : 0))
 fi
-if [[ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]]; then
-  echo "ERROR: SUPABASE_SERVICE_ROLE_KEY is not set" >&2
+
+# ── REST fallback (often 404 on Supabase) ────────────────────
+if [[ -z "${SUPABASE_URL:-}" ]] || [[ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]]; then
+  echo "ERROR: Set DATABASE_URL (recommended) or SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY" >&2
+  echo "" >&2
+  echo "Get DATABASE_URL: Supabase Dashboard → Settings → Database → Connection string (URI)" >&2
   exit 1
 fi
 
-# Strip trailing slash from URL
 SUPABASE_URL="${SUPABASE_URL%/}"
-
-echo "Running migrations against: $SUPABASE_URL"
+echo "Running migrations against: $SUPABASE_URL (REST)"
 echo "──────────────────────────────────────────"
 
 FAILED=0
@@ -57,7 +87,6 @@ for migration in "$SCRIPT_DIR"/[0-9]*.sql; do
   http_code=$(echo "$response" | tail -1)
   body=$(echo "$response" | sed '$d')
 
-  # Fallback: use the raw SQL endpoint if rpc/exec_sql isn't available
   if [[ "$http_code" != "200" ]]; then
     response=$(curl -s -w "\n%{http_code}" \
       -X POST "${SUPABASE_URL}/pg" \
@@ -65,7 +94,6 @@ for migration in "$SCRIPT_DIR"/[0-9]*.sql; do
       -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
       -H "Content-Type: application/json" \
       -d "$(jq -n --arg sql "$sql" '{query: $sql}')" 2>&1) || true
-
     http_code=$(echo "$response" | tail -1)
     body=$(echo "$response" | sed '$d')
   fi
@@ -85,8 +113,8 @@ echo "Done: $SUCCEEDED succeeded, $FAILED failed"
 
 if [[ $FAILED -gt 0 ]]; then
   echo ""
-  echo "TIP: If the REST endpoints aren't available, run migrations"
-  echo "     directly in the Supabase Dashboard → SQL Editor, or use:"
-  echo "     psql \"\$DATABASE_URL\" -f migrations/001_ops_mission_proposals.sql"
+  echo "TIP: Use psql instead. Add to .env:"
+  echo "     DATABASE_URL=postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres"
+  echo "     Get from: Supabase Dashboard → Settings → Database → Connection string (URI)"
   exit 1
 fi

@@ -37,11 +37,14 @@ OLLAMA_MODEL=llama3.2
 
 ## 2. Run migrations
 
-```bash
-./migrations/migrate.sh
-```
+**Option A — psql (recommended):**
 
-If that fails (Supabase REST limits), run each `migrations/*.sql` manually in Supabase Dashboard → SQL Editor.
+1. Supabase Dashboard → Project Settings → Database → **Connection string** → **URI**
+2. Add to `.env`: `DATABASE_URL=postgresql://...`
+3. Install psql: `sudo apt install postgresql-client` (Ubuntu/Debian)
+4. Run: `./migrations/migrate.sh`
+
+**Option B — SQL Editor:** Run each `migrations/*.sql` manually in Supabase → SQL Editor.
 
 ---
 
@@ -77,9 +80,17 @@ Runs every 5 minutes. Triggers fire → proposals → missions → steps (queued
 
 ---
 
-## 5. Stage dashboard (optional)
+## 5. Stage dashboard
 
-Edit `stage/config.js`:
+**1. Run RLS migration** (allows anon key to read ops tables):
+
+```bash
+./migrations/migrate.sh
+```
+
+Or run `migrations/015_ops_rls_stage.sql` manually in Supabase SQL Editor.
+
+**2. Edit `stage/config.js`** with your Supabase URL and anon key:
 
 ```javascript
 window.STAGE_CONFIG = {
@@ -88,16 +99,11 @@ window.STAGE_CONFIG = {
 };
 ```
 
-Configure RLS in Supabase so the anon key can `SELECT`:
+Get values from Supabase Dashboard → Project Settings → API (Project URL, anon public).
 
-- `ops_agent_events`
-- `ops_missions`
-- `ops_mission_steps`
-- `ops_agents`
+**3. Enable Realtime** (optional, for live event feed): Supabase Dashboard → Database → Replication → enable `ops_agent_events`.
 
-For realtime: Database → Replication → enable `ops_agent_events`.
-
-Then open `/stage/` locally or after deploy.
+**4. Open Stage:** `http://localhost:8787/stage/` (wrangler dev) or deploy and visit `https://emtesseract.com/stage/`.
 
 ---
 
