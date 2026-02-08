@@ -16,6 +16,12 @@ Stage is the frontend for emTesseract Ops. It shows agent activity, missions, an
 - **API** — Fetches from `/api/ops_*` endpoints. Configure `apiUrl` in `stage/config.js` when API runs elsewhere.
 - **Config** — `stage/config.js` (gitignored). Copy from `config.example.js`.
 
+## Chat API
+
+- **POST /api/chat** — Send message: `{ agent_id, content, session_id? }`. Creates session if new; returns `{ session_id, message }` with background LLM processing.
+- **GET /api/chat/session/:id** — Messages for a session.
+- **GET /api/chat/sessions?agent_id=** — Recent sessions for an agent.
+
 ## Data Refresh
 
 **Flicker-free incremental updates:**

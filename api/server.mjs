@@ -97,6 +97,31 @@ async function handleApi(pathname, searchParams) {
     return { data: rows ?? [] };
   }
 
+  const chatSessionMatch = pathname.match(/^\/api\/chat\/session\/([a-f0-9-]+)$/);
+  if (chatSessionMatch) {
+    const sessionId = chatSessionMatch[1];
+    const { rows } = await pool.query(
+      `SELECT id, role, content, status, created_at FROM ops_chat_messages
+       WHERE session_id = $1 ORDER BY created_at ASC`,
+      [sessionId]
+    );
+    return { data: rows ?? [] };
+  }
+
+  if (pathname === "/api/chat/sessions") {
+    const agentId = searchParams.get("agent_id") || "";
+    if (!agentId) return { data: [] };
+    const { rows } = await pool.query(
+      `SELECT s.id, s.agent_id, s.created_at,
+        (SELECT COUNT(*) FROM ops_chat_messages m WHERE m.session_id = s.id) AS message_count
+       FROM ops_chat_sessions s
+       WHERE s.agent_id = $1
+       ORDER BY s.created_at DESC LIMIT 10`,
+      [agentId]
+    );
+    return { data: rows ?? [] };
+  }
+
   if (pathname === "/api/ops_work_items") {
     const { rows: proposals } = await pool.query(
       `SELECT id, agent_id, title, status, created_at FROM ops_mission_proposals
@@ -174,39 +199,92 @@ async function readJsonBody(req) {
   });
 }
 
-async function handlePostChat(body, pool) {
-  const msgs = body.messages;
-  const agentId = body.agent_id || "";
+async function processChatInBackground(assistantMessageId, systemPrompt, llmMessages, pool) {
+  try {
+    const content = await complete(llmMessages, { temperature: 0.7 });
+    await pool.query(
+      "UPDATE ops_chat_messages SET content = $1, status = 'done' WHERE id = $2",
+      [content, assistantMessageId]
+    );
+  } catch (err) {
+    await pool.query(
+      "UPDATE ops_chat_messages SET content = $1, status = 'failed' WHERE id = $2",
+      [`Error: ${err.message}`, assistantMessageId]
+    );
+  }
+}
 
-  if (!Array.isArray(msgs) || msgs.length === 0) {
-    return { status: 400, json: { error: "messages array required" } };
+async function handlePostChat(body, pool) {
+  const sessionId = body.session_id || null;
+  const agentId = body.agent_id || "";
+  const content = (body.content || "").trim();
+
+  if (!content || !agentId) {
+    return { status: 400, json: { error: "agent_id and content required" } };
   }
 
-  let systemPrompt =
-    "You are part of the emTesseract ops team. Help with missions, content ideas, and analysis. Be concise and friendly.";
-  if (agentId) {
-    const { rows } = await pool.query(
-      "SELECT system_directive, display_name FROM ops_agents WHERE id = $1 AND enabled = true",
+  let sessId = sessionId;
+  if (!sessId) {
+    const { rows: sess } = await pool.query(
+      `INSERT INTO ops_chat_sessions (agent_id) VALUES ($1) RETURNING id`,
       [agentId]
     );
-    if (rows?.[0]?.system_directive) {
-      systemPrompt = rows[0].system_directive;
-    } else if (rows?.[0]?.display_name) {
-      systemPrompt = `You are ${rows[0].display_name}. ${systemPrompt}`;
+    sessId = sess?.[0]?.id;
+  } else {
+    const { rowCount } = await pool.query(
+      "SELECT 1 FROM ops_chat_sessions WHERE id = $1 AND agent_id = $2",
+      [sessId, agentId]
+    );
+    if (rowCount === 0) {
+      return { status: 400, json: { error: "Invalid session_id for agent" } };
     }
   }
 
-  const llmMessages = [{ role: "system", content: systemPrompt }];
-  for (const m of msgs) {
-    if (m.role && m.content) llmMessages.push({ role: m.role, content: String(m.content) });
+  await pool.query(
+    `INSERT INTO ops_chat_messages (session_id, role, content, status)
+     VALUES ($1, 'user', $2, 'done')`,
+    [sessId, content]
+  );
+
+  const { rows: assistant } = await pool.query(
+    `INSERT INTO ops_chat_messages (session_id, role, content, status)
+     VALUES ($1, 'assistant', '', 'pending') RETURNING id`,
+    [sessId]
+  );
+  const assistantMessageId = assistant?.[0]?.id;
+
+  let systemPrompt =
+    "You are part of the emTesseract ops team. Help with missions, content ideas, and analysis. Be concise and friendly.";
+  const { rows: agentRows } = await pool.query(
+    "SELECT system_directive, display_name FROM ops_agents WHERE id = $1 AND enabled = true",
+    [agentId]
+  );
+  if (agentRows?.[0]?.system_directive) {
+    systemPrompt = agentRows[0].system_directive;
+  } else if (agentRows?.[0]?.display_name) {
+    systemPrompt = `You are ${agentRows[0].display_name}. ${systemPrompt}`;
   }
 
-  try {
-    const content = await complete(llmMessages, { temperature: 0.7 });
-    return { status: 200, json: { content } };
-  } catch (err) {
-    return { status: 500, json: { error: err.message } };
+  const { rows: history } = await pool.query(
+    `SELECT role, content FROM ops_chat_messages
+     WHERE session_id = $1 AND (role = 'user' OR (role = 'assistant' AND status = 'done'))
+     ORDER BY created_at ASC`,
+    [sessId]
+  );
+  const llmMessages = [{ role: "system", content: systemPrompt }];
+  for (const m of history || []) {
+    if (m.role && (m.content || m.role === "user")) {
+      llmMessages.push({ role: m.role, content: String(m.content || "") });
+    }
   }
+
+  setImmediate(() => {
+    processChatInBackground(assistantMessageId, systemPrompt, llmMessages, pool).catch((err) =>
+      console.error("Chat background error:", err)
+    );
+  });
+
+  return { status: 200, json: { session_id: sessId, assistant_message_id: assistantMessageId } };
 }
 
 async function handlePostProposals(body) {
