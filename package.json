@@ -9,7 +9,8 @@
     "lint:md": "markdownlint --ignore node_modules \"**/*.md\"",
     "lint:css": "stylelint \"**/*.css\"",
     "test": "html-validate index.html 404.html",
-    "migrate": "bash migrations/migrate.sh"
+    "migrate": "bash migrations/migrate.sh",
+    "api": "node api/server.mjs"
   },
   "devDependencies": {
     "html-validate": "^8",
@@ -17,5 +18,8 @@
     "stylelint": "^16",
     "stylelint-config-standard": "^36",
     "wrangler": "^4"
+  },
+  "dependencies": {
+    "pg": "^8"
   }
 }

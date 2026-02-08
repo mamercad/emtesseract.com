@@ -1,28 +1,29 @@
-import { sb } from "./supabase.mjs";
+import { query } from "./db.mjs";
 
 // ── Cap Gates ──────────────────────────────────────────────
-// Each step kind can have a gate that checks quotas before
-// a proposal is accepted.
 
 async function getPolicy(key) {
-  const { data } = await sb
-    .from("ops_policy")
-    .select("value")
-    .eq("key", key)
-    .single();
-  return data?.value ?? {};
+  const { rows, error } = await query(
+    "SELECT value FROM ops_policy WHERE key = $1",
+    [key]
+  );
+  if (error) return {};
+  return rows?.[0]?.value ?? {};
 }
 
+const ALLOWED_TABLES = ["ops_tweet_metrics", "ops_mission_steps"];
+const ALLOWED_DATE_COLS = ["created_at", "posted_at"];
+
 async function countToday(table, column = "created_at") {
+  if (!ALLOWED_TABLES.includes(table) || !ALLOWED_DATE_COLS.includes(column)) return 0;
   const startOfDay = new Date();
   startOfDay.setUTCHours(0, 0, 0, 0);
 
-  const { count } = await sb
-    .from(table)
-    .select("*", { count: "exact", head: true })
-    .gte(column, startOfDay.toISOString());
-
-  return count ?? 0;
+  const { rows, error } = await query(
+    `SELECT COUNT(*)::int FROM ${table} WHERE ${column} >= $1`,
+    [startOfDay.toISOString()]
+  );
+  return error ? 0 : (rows?.[0]?.count ?? 0);
 }
 
 const STEP_KIND_GATES = {
@@ -69,104 +70,77 @@ async function shouldAutoApprove(proposedSteps) {
 
 // ── Main entry point ───────────────────────────────────────
 
-/**
- * Single entry point for all proposal creation.
- * Every proposal — from triggers, reactions, initiatives, or
- * direct agent requests — goes through this function.
- */
 export async function createProposal({ agentId, title, proposedSteps }) {
-  // 1. Check cap gates — reject immediately if quota is full
   const gateResult = await checkGates(proposedSteps);
   if (!gateResult.ok) {
-    const { data: rejected } = await sb
-      .from("ops_mission_proposals")
-      .insert({
-        agent_id: agentId,
-        title,
-        status: "rejected",
-        proposed_steps: proposedSteps,
-        rejection_reason: gateResult.reason,
-      })
-      .select("id")
-      .single();
-
+    const { rows: inserted } = await query(
+      `INSERT INTO ops_mission_proposals (agent_id, title, status, proposed_steps, rejection_reason)
+       VALUES ($1, $2, 'rejected', $3, $4)
+       RETURNING id`,
+      [agentId, title, JSON.stringify(proposedSteps), gateResult.reason]
+    );
     await emitEvent(agentId, "proposal_rejected", title, gateResult.reason);
-    return { accepted: false, proposalId: rejected?.id, reason: gateResult.reason };
+    return { accepted: false, proposalId: inserted?.[0]?.id, reason: gateResult.reason };
   }
 
-  // 2. Insert proposal as pending
-  const { data: proposal, error: insertErr } = await sb
-    .from("ops_mission_proposals")
-    .insert({
-      agent_id: agentId,
-      title,
-      status: "pending",
-      proposed_steps: proposedSteps,
-    })
-    .select("id")
-    .single();
+  const { rows: proposal, error: insertErr } = await query(
+    `INSERT INTO ops_mission_proposals (agent_id, title, status, proposed_steps)
+     VALUES ($1, $2, 'pending', $3)
+     RETURNING id`,
+    [agentId, title, JSON.stringify(proposedSteps)]
+  );
 
   if (insertErr) throw new Error(`Proposal insert failed: ${insertErr.message}`);
 
-  // 3. Evaluate auto-approve
+  const prop = proposal[0];
   const autoApprove = await shouldAutoApprove(proposedSteps);
 
   if (autoApprove) {
-    // Accept the proposal
-    await sb
-      .from("ops_mission_proposals")
-      .update({ status: "accepted" })
-      .eq("id", proposal.id);
+    await query(
+      "UPDATE ops_mission_proposals SET status = 'accepted' WHERE id = $1",
+      [prop.id]
+    );
 
-    // Create mission + steps
-    const mission = await createMissionFromProposal(proposal.id, agentId, title, proposedSteps);
+    const mission = await createMissionFromProposal(prop.id, agentId, title, proposedSteps);
 
     await emitEvent(agentId, "proposal_accepted", title, `Auto-approved → mission ${mission.id}`);
-    return { accepted: true, proposalId: proposal.id, missionId: mission.id };
+    return { accepted: true, proposalId: prop.id, missionId: mission.id };
   }
 
-  // Not auto-approved — stays pending for manual review
   await emitEvent(agentId, "proposal_pending", title, "Awaiting manual approval");
-  return { accepted: false, proposalId: proposal.id, reason: "pending_review" };
+  return { accepted: false, proposalId: prop.id, reason: "pending_review" };
 }
 
 // ── Mission creation ───────────────────────────────────────
 
 async function createMissionFromProposal(proposalId, agentId, title, proposedSteps) {
-  const { data: mission, error: missionErr } = await sb
-    .from("ops_missions")
-    .insert({
-      proposal_id: proposalId,
-      title,
-      status: "approved",
-      created_by: agentId,
-    })
-    .select("id")
-    .single();
+  const { rows: mission, error: missionErr } = await query(
+    `INSERT INTO ops_missions (proposal_id, title, status, created_by)
+     VALUES ($1, $2, 'approved', $3)
+     RETURNING id`,
+    [proposalId, title, agentId]
+  );
 
   if (missionErr) throw new Error(`Mission insert failed: ${missionErr.message}`);
+  const m = mission[0];
 
-  // Create steps
-  const steps = proposedSteps.map((s) => ({
-    mission_id: mission.id,
-    kind: s.kind,
-    payload: s.payload ?? {},
-  }));
+  for (const s of proposedSteps) {
+    await query(
+      `INSERT INTO ops_mission_steps (mission_id, kind, payload)
+       VALUES ($1, $2, $3)`,
+      [m.id, s.kind, JSON.stringify(s.payload ?? {})]
+    );
+  }
 
-  const { error: stepsErr } = await sb.from("ops_mission_steps").insert(steps);
-  if (stepsErr) throw new Error(`Steps insert failed: ${stepsErr.message}`);
-
-  return mission;
+  return m;
 }
 
 // ── Event helper ───────────────────────────────────────────
 
 async function emitEvent(agentId, kind, title, summary) {
-  await sb.from("ops_agent_events").insert({
-    agent_id: agentId,
-    kind,
-    title,
-    summary,
-    tags: [kind],
-  });
+  await query(
+    `INSERT INTO ops_agent_events (agent_id, kind, title, summary, tags)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [agentId, kind, title, summary, [kind]]
+  );
 }

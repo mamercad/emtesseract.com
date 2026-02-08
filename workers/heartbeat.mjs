@@ -5,7 +5,7 @@
  * and recovers stuck tasks.
  */
 import "./lib/env.mjs";
-import { sb } from "./lib/supabase.mjs";
+import { query } from "./lib/db.mjs";
 import { createProposal } from "./lib/proposal-service.mjs";
 
 const HEARTBEAT_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS ?? "300000", 10); // default 5 min
@@ -14,28 +14,24 @@ const STALE_STEP_MINUTES = 30;
 // ── Trigger evaluation ─────────────────────────────────────
 
 async function evaluateTriggers() {
-  const { data: rules } = await sb
-    .from("ops_trigger_rules")
-    .select("*")
-    .eq("enabled", true);
+  const { rows: rules, error } = await query(
+    "SELECT * FROM ops_trigger_rules WHERE enabled = true"
+  );
 
-  if (!rules?.length) return { evaluated: 0, fired: 0 };
+  if (error || !rules?.length) return { evaluated: 0, fired: 0 };
 
   let fired = 0;
 
   for (const rule of rules) {
-    // Check cooldown
     if (rule.last_fired_at) {
       const elapsed = Date.now() - new Date(rule.last_fired_at).getTime();
       if (elapsed < rule.cooldown_minutes * 60_000) continue;
     }
 
-    // For proactive triggers, apply skip probability (10-15% chance of skip)
     if (rule.trigger_event.startsWith("proactive_")) {
       if (Math.random() < 0.12) continue;
     }
 
-    // Try to fire
     const target = rule.action_config?.target_agent;
     if (!target) continue;
 
@@ -48,14 +44,10 @@ async function evaluateTriggers() {
         ],
       });
 
-      // Update fire count and last_fired_at
-      await sb
-        .from("ops_trigger_rules")
-        .update({
-          fire_count: (rule.fire_count ?? 0) + 1,
-          last_fired_at: new Date().toISOString(),
-        })
-        .eq("id", rule.id);
+      await query(
+        `UPDATE ops_trigger_rules SET fire_count = $1, last_fired_at = $2 WHERE id = $3`,
+        [(rule.fire_count ?? 0) + 1, new Date().toISOString(), rule.id]
+      );
 
       fired++;
     } catch (err) {
@@ -69,26 +61,22 @@ async function evaluateTriggers() {
 // ── Reaction queue processing ──────────────────────────────
 
 async function processReactionQueue() {
-  const { data: reactions } = await sb
-    .from("ops_agent_reactions")
-    .select("*")
-    .eq("status", "pending")
-    .order("created_at", { ascending: true })
-    .limit(5);
+  const { rows: reactions, error } = await query(
+    `SELECT * FROM ops_agent_reactions WHERE status = 'pending'
+     ORDER BY created_at ASC LIMIT 5`
+  );
 
-  if (!reactions?.length) return { processed: 0 };
+  if (error || !reactions?.length) return { processed: 0 };
 
   let processed = 0;
 
   for (const reaction of reactions) {
     try {
-      // Mark as processing
-      await sb
-        .from("ops_agent_reactions")
-        .update({ status: "processing" })
-        .eq("id", reaction.id);
+      await query(
+        "UPDATE ops_agent_reactions SET status = 'processing' WHERE id = $1",
+        [reaction.id]
+      );
 
-      // Create a proposal for the target agent
       await createProposal({
         agentId: reaction.target_agent,
         title: `[reaction] ${reaction.reaction_type} from ${reaction.source_agent}`,
@@ -104,18 +92,18 @@ async function processReactionQueue() {
         ],
       });
 
-      await sb
-        .from("ops_agent_reactions")
-        .update({ status: "completed" })
-        .eq("id", reaction.id);
+      await query(
+        "UPDATE ops_agent_reactions SET status = 'completed' WHERE id = $1",
+        [reaction.id]
+      );
 
       processed++;
     } catch (err) {
       console.error(`Reaction ${reaction.id} failed:`, err.message);
-      await sb
-        .from("ops_agent_reactions")
-        .update({ status: "failed" })
-        .eq("id", reaction.id);
+      await query(
+        "UPDATE ops_agent_reactions SET status = 'failed' WHERE id = $1",
+        [reaction.id]
+      );
     }
   }
 
@@ -127,23 +115,23 @@ async function processReactionQueue() {
 async function recoverStaleSteps() {
   const cutoff = new Date(Date.now() - STALE_STEP_MINUTES * 60_000).toISOString();
 
-  const { data: stale } = await sb
-    .from("ops_mission_steps")
-    .select("id, mission_id")
-    .eq("status", "running")
-    .lt("updated_at", cutoff);
+  const { rows: stale, error } = await query(
+    `SELECT id, mission_id FROM ops_mission_steps
+     WHERE status = 'running' AND updated_at < $1`,
+    [cutoff]
+  );
 
-  if (!stale?.length) return { recovered: 0 };
+  if (error || !stale?.length) return { recovered: 0 };
 
   for (const step of stale) {
-    await sb
-      .from("ops_mission_steps")
-      .update({
-        status: "failed",
-        error: `Stale: running for >${STALE_STEP_MINUTES}min with no progress`,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", step.id);
+    await query(
+      `UPDATE ops_mission_steps SET status = 'failed', error = $1, updated_at = $2 WHERE id = $3`,
+      [
+        `Stale: running for >${STALE_STEP_MINUTES}min with no progress`,
+        new Date().toISOString(),
+        step.id,
+      ]
+    );
   }
 
   return { recovered: stale.length };
@@ -154,19 +142,18 @@ async function recoverStaleSteps() {
 async function recoverStaleRoundtables() {
   const cutoff = new Date(Date.now() - 30 * 60_000).toISOString();
 
-  const { data: stale } = await sb
-    .from("ops_roundtable_queue")
-    .select("id")
-    .eq("status", "running")
-    .lt("started_at", cutoff);
+  const { rows: stale, error } = await query(
+    `SELECT id FROM ops_roundtable_queue WHERE status = 'running' AND started_at < $1`,
+    [cutoff]
+  );
 
-  if (!stale?.length) return { recovered: 0 };
+  if (error || !stale?.length) return { recovered: 0 };
 
   for (const rt of stale) {
-    await sb
-      .from("ops_roundtable_queue")
-      .update({ status: "failed", completed_at: new Date().toISOString() })
-      .eq("id", rt.id);
+    await query(
+      `UPDATE ops_roundtable_queue SET status = 'failed', completed_at = $1 WHERE id = $2`,
+      [new Date().toISOString(), rt.id]
+    );
   }
 
   return { recovered: stale.length };
@@ -196,13 +183,11 @@ async function runHeartbeat() {
 
   const durationMs = Date.now() - start;
 
-  // Audit log
-  await sb.from("ops_action_runs").insert({
-    action: "heartbeat",
-    status: "succeeded",
-    result: results,
-    duration_ms: durationMs,
-  });
+  await query(
+    `INSERT INTO ops_action_runs (action, status, result, duration_ms)
+     VALUES ('heartbeat', 'succeeded', $1, $2)`,
+    [JSON.stringify(results), durationMs]
+  );
 
   console.log(`[heartbeat] ${durationMs}ms`, JSON.stringify(results));
 }
@@ -210,6 +195,6 @@ async function runHeartbeat() {
 // ── Main ───────────────────────────────────────────────────
 
 console.log(`Heartbeat starting (interval: ${HEARTBEAT_INTERVAL_MS}ms)`);
-await runHeartbeat(); // run once immediately
+await runHeartbeat();
 
 setInterval(runHeartbeat, HEARTBEAT_INTERVAL_MS);

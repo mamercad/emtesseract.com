@@ -74,13 +74,11 @@
   <div class="stage-setup" id="stage-setup" hidden>
     <div class="stage-setup__card">
       <h2>Configure Stage</h2>
-      <p>Edit <code>stage/config.js</code> and add your Supabase URL and anon key.</p>
-      <p>Ensure RLS policies allow <code>SELECT</code> on <code>ops_agent_events</code>, <code>ops_missions</code>, <code>ops_mission_steps</code>, and <code>ops_agents</code>.</p>
-      <p>For realtime events: enable Realtime for <code>ops_agent_events</code> in Supabase Dashboard → Database → Replication.</p>
+      <p>Edit <code>stage/config.js</code> and set <code>apiUrl</code> to your Stage API server (e.g. <code>http://localhost:8788</code>).</p>
+      <p>Run the API server on Boomer: <code>node api/server.mjs</code></p>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="/stage/config.js"></script>
   <script src="/stage/app.js"></script>
   <script>

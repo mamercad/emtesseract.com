@@ -1,9 +1,7 @@
 /**
- * Supabase client config for Stage.
- * Copy this file to config.js and fill in your project details.
- * config.js is gitignored.
+ * Stage config — API base URL for local hosting.
+ * Copy to config.js and set apiUrl to your Stage API server.
  */
 window.STAGE_CONFIG = {
-  supabaseUrl: "https://your-project.supabase.co",
-  supabaseAnonKey: "your-anon-key",
+  apiUrl: "http://localhost:8788",
 };

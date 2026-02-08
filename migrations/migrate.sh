@@ -49,8 +49,21 @@ if [[ -n "${DATABASE_URL:-}" ]]; then
   FAILED=0
   SUCCEEDED=0
 
+  SKIP_RLS="${MIGRATE_SKIP_RLS:-}"
+  if [[ -z "$SKIP_RLS" && "$DATABASE_URL" == *"supabase"* ]]; then
+    SKIP_RLS=0
+  elif [[ -z "$SKIP_RLS" ]]; then
+    SKIP_RLS=1
+  fi
+
   for migration in "$SCRIPT_DIR"/[0-9]*.sql; do
     name="$(basename "$migration")"
+    if [[ "$name" == "015_ops_rls_stage.sql" && "$SKIP_RLS" == "1" ]]; then
+      printf "  %-45s" "$name"
+      echo "SKIP (local Postgres, no anon role)"
+      SUCCEEDED=$((SUCCEEDED + 1))
+      continue
+    fi
     printf "  %-45s" "$name"
     set +e
      err=$(psql -d "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration" 2>&1)

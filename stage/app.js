@@ -1,25 +1,16 @@
 /**
  * Stage — Ops dashboard app
- * Fetches events and missions from Supabase
+ * Fetches events and missions from local API (replaces Supabase)
  */
 (function () {
   const config = window.STAGE_CONFIG || {};
-  const needsSetup =
-    !config.supabaseUrl ||
-    !config.supabaseAnonKey ||
-    config.supabaseUrl.includes("your-project") ||
-    config.supabaseAnonKey.includes("your-anon");
+  const apiUrl = (config.apiUrl || "").replace(/\/$/, "");
+  const needsSetup = !apiUrl;
 
   if (needsSetup) {
     document.getElementById("stage-setup").hidden = false;
     document.querySelector(".stage-main").style.opacity = "0.5";
     document.querySelector(".stage-main").style.pointerEvents = "none";
-    return;
-  }
-
-  const sb = window.supabase?.createClient(config.supabaseUrl, config.supabaseAnonKey);
-  if (!sb) {
-    console.error("Supabase client not loaded");
     return;
   }
 
@@ -34,15 +25,24 @@
   let agentsCache = [];
   let eventKinds = new Set();
 
+  async function fetchApi(path, params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    const url = qs ? `${apiUrl}${path}?${qs}` : `${apiUrl}${path}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(res.statusText);
+    return res.json();
+  }
+
   // ── Agents ───────────────────────────────────────────────
 
   async function loadAgents() {
-    const { data, error } = await sb.from("ops_agents").select("id, display_name, role").eq("enabled", true);
-    if (error) {
-      console.error("Agents load failed:", error);
-      return;
+    try {
+      const { data } = await fetchApi("/api/ops_agents");
+      agentsCache = data || [];
+    } catch (err) {
+      console.error("Agents load failed:", err);
+      agentsCache = [];
     }
-    agentsCache = data || [];
     renderAgents();
     populateFilters();
   }
@@ -64,6 +64,8 @@
   }
 
   function populateFilters() {
+    if (!$filterAgent) return;
+    $filterAgent.innerHTML = '<option value="">All agents</option>';
     agentsCache.forEach((a) => {
       const opt = document.createElement("option");
       opt.value = a.id;
@@ -72,34 +74,25 @@
     });
   }
 
-  // ── Signal feed ──────────────────────────────────────────
+  // ── Signal feed ───────────────────────────────────────────
 
   async function loadEvents() {
-    const agentId = $filterAgent?.value || "";
-    const kind = $filterKind?.value || "";
+    const params = {};
+    if ($filterAgent?.value) params.agent_id = $filterAgent.value;
+    if ($filterKind?.value) params.kind = $filterKind.value;
 
-    let q = sb
-      .from("ops_agent_events")
-      .select("id, agent_id, kind, title, summary, created_at")
-      .order("created_at", { ascending: false })
-      .limit(100);
+    try {
+      const { data } = await fetchApi("/api/ops_agent_events", params);
+      eventKinds = new Set((data || []).map((e) => e.kind));
+      populateKindFilter();
 
-    if (agentId) q = q.eq("agent_id", agentId);
-    if (kind) q = q.eq("kind", kind);
+      $feedEmpty.hidden = (data || []).length > 0;
+      $feedList.querySelectorAll(".feed-item").forEach((el) => el.remove());
 
-    const { data, error } = await q;
-    if (error) {
-      console.error("Events load failed:", error);
-      return;
+      (data || []).forEach((e) => appendFeedItem(e));
+    } catch (err) {
+      console.error("Events load failed:", err);
     }
-
-    eventKinds = new Set((data || []).map((e) => e.kind));
-    populateKindFilter();
-
-    $feedEmpty.hidden = (data || []).length > 0;
-    $feedList.querySelectorAll(".feed-item").forEach((el) => el.remove());
-
-    (data || []).forEach((e) => appendFeedItem(e));
   }
 
   function appendFeedItem(e) {
@@ -118,6 +111,7 @@
   }
 
   function populateKindFilter() {
+    if (!$filterKind) return;
     const current = $filterKind.value;
     $filterKind.innerHTML = '<option value="">All kinds</option>';
     eventKinds.forEach((k) => {
@@ -132,40 +126,31 @@
   // ── Missions ─────────────────────────────────────────────
 
   async function loadMissions() {
-    const { data: missions, error } = await sb
-      .from("ops_missions")
-      .select("id, title, status, created_by, created_at")
-      .order("created_at", { ascending: false })
-      .limit(50);
+    try {
+      const { data: missions } = await fetchApi("/api/ops_missions");
 
-    if (error) {
-      console.error("Missions load failed:", error);
-      return;
-    }
+      if (!missions?.length) {
+        $missionsEmpty.hidden = false;
+        $missionsList.querySelectorAll(".mission-card").forEach((el) => el.remove());
+        return;
+      }
 
-    if (!missions?.length) {
-      $missionsEmpty.hidden = false;
-      $missionsList.querySelectorAll(".mission-card").forEach((el) => el.remove());
-      return;
-    }
+      $missionsEmpty.hidden = true;
 
-    $missionsEmpty.hidden = true;
+      const missionIds = missions.map((m) => m.id);
+      const { data: steps } = await fetchApi("/api/ops_mission_steps", {
+        mission_ids: missionIds.join(","),
+      });
 
-    const missionIds = missions.map((m) => m.id);
-    const { data: steps } = await sb
-      .from("ops_mission_steps")
-      .select("mission_id, kind, status")
-      .in("mission_id", missionIds);
+      const stepsByMission = (steps || []).reduce((acc, s) => {
+        if (!acc[s.mission_id]) acc[s.mission_id] = [];
+        acc[s.mission_id].push(s);
+        return acc;
+      }, {});
 
-    const stepsByMission = (steps || []).reduce((acc, s) => {
-      if (!acc[s.mission_id]) acc[s.mission_id] = [];
-      acc[s.mission_id].push(s);
-      return acc;
-    }, {});
-
-    $missionsList.innerHTML = missions
-      .map(
-        (m) => `
+      $missionsList.innerHTML = missions
+        .map(
+          (m) => `
         <article class="mission-card" data-id="${m.id}">
           <h3 class="mission-card__title">${escapeHtml(m.title)}</h3>
           <div class="mission-card__meta">
@@ -191,27 +176,11 @@
               : ""
           }
         </article>`
-      )
-      .join("");
-  }
-
-  // ── Realtime subscription ───────────────────────────────
-
-  function subscribeToEvents() {
-    sb.channel("ops_events")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "ops_agent_events",
-        },
-        (payload) => {
-          appendFeedItem(payload.new);
-          $feedEmpty.hidden = true;
-        }
-      )
-      .subscribe();
+        )
+        .join("");
+    } catch (err) {
+      console.error("Missions load failed:", err);
+    }
   }
 
   // ── Helpers ───────────────────────────────────────────────
@@ -243,8 +212,8 @@
     $filterAgent?.addEventListener("change", loadEvents);
     $filterKind?.addEventListener("change", loadEvents);
 
-    subscribeToEvents();
-
+    // Poll instead of realtime (no Supabase)
+    setInterval(loadEvents, 10000);
     setInterval(loadMissions, 30000);
   }
 

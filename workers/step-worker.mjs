@@ -4,7 +4,7 @@
  * Run elsewhere: OLLAMA_BASE_URL=http://boomer:11434
  */
 import "./lib/env.mjs";
-import { sb } from "./lib/supabase.mjs";
+import { query } from "./lib/db.mjs";
 import { complete } from "./lib/llm.mjs";
 
 const WORKER_ID = process.env.WORKER_ID || "step-worker-1";
@@ -16,13 +16,11 @@ function sleep(ms) {
 }
 
 async function emitEvent(agentId, kind, title, summary) {
-  await sb.from("ops_agent_events").insert({
-    agent_id: agentId,
-    kind,
-    title,
-    summary,
-    tags: [kind],
-  });
+  await query(
+    `INSERT INTO ops_agent_events (agent_id, kind, title, summary, tags)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [agentId, kind, title, summary, [kind]]
+  );
 }
 
 async function executeStep(step, mission) {
@@ -37,80 +35,79 @@ async function executeStep(step, mission) {
         content: `You are an analyst at emTesseract (game dev company). In 2–3 sentences, analyze: "${topic}". Be concise.`,
       },
     ]);
-    return { result: { analysis: reply }, event: { kind: "analyze_complete", title: `Analyzed: ${topic}`, summary: reply.slice(0, 200) } };
+    return {
+      result: { analysis: reply },
+      event: { kind: "analyze_complete", title: `Analyzed: ${topic}`, summary: reply.slice(0, 200) },
+    };
   }
 
   throw new Error(`Unknown step kind: ${kind}`);
 }
 
 async function finalizeMission(missionId) {
-  const { data: steps } = await sb.from("ops_mission_steps").select("status").eq("mission_id", missionId);
+  const { rows: steps } = await query(
+    "SELECT status FROM ops_mission_steps WHERE mission_id = $1",
+    [missionId]
+  );
   const hasFailed = steps?.some((s) => s.status === "failed");
   const allDone = steps?.every((s) => s.status === "succeeded" || s.status === "failed");
 
   if (allDone) {
-    await sb
-      .from("ops_missions")
-      .update({
-        status: hasFailed ? "failed" : "succeeded",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", missionId);
+    await query(
+      "UPDATE ops_missions SET status = $1, updated_at = $2 WHERE id = $3",
+      [hasFailed ? "failed" : "succeeded", new Date().toISOString(), missionId]
+    );
   }
 }
 
 async function runOnce() {
   for (const kind of STEP_KINDS) {
-    const { data: steps } = await sb
-      .from("ops_mission_steps")
-      .select("id, mission_id, kind, payload")
-      .eq("status", "queued")
-      .eq("kind", kind)
-      .order("created_at", { ascending: true })
-      .limit(1);
+    const { rows: steps } = await query(
+      `SELECT id, mission_id, kind, payload FROM ops_mission_steps
+       WHERE status = 'queued' AND kind = $1
+       ORDER BY created_at ASC LIMIT 1`,
+      [kind]
+    );
 
     if (!steps?.length) continue;
 
     const step = steps[0];
 
-    const { data: claimed } = await sb
-      .from("ops_mission_steps")
-      .update({ status: "running", reserved_by: WORKER_ID, updated_at: new Date().toISOString() })
-      .eq("id", step.id)
-      .eq("status", "queued")
-      .select("id, mission_id")
-      .maybeSingle();
+    const { rows: claimed } = await query(
+      `UPDATE ops_mission_steps
+       SET status = 'running', reserved_by = $1, updated_at = $2
+       WHERE id = $3 AND status = 'queued'
+       RETURNING id, mission_id`,
+      [WORKER_ID, new Date().toISOString(), step.id]
+    );
 
-    if (!claimed) continue;
+    if (!claimed?.length) continue;
 
-    const { data: mission } = await sb.from("ops_missions").select("id, created_by, title").eq("id", claimed.mission_id).single();
-    if (!mission) continue;
+    const { rows: mission } = await query(
+      "SELECT id, created_by, title FROM ops_missions WHERE id = $1",
+      [claimed[0].mission_id]
+    );
+    if (!mission?.length) continue;
+
+    const m = mission[0];
 
     try {
-      const { result, event } = await executeStep(step, mission);
-      await sb
-        .from("ops_mission_steps")
-        .update({
-          status: "succeeded",
-          result,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", step.id);
-      await emitEvent(mission.created_by, event.kind, event.title, event.summary);
-      await finalizeMission(claimed.mission_id);
+      const { result, event } = await executeStep(step, m);
+      await query(
+        `UPDATE ops_mission_steps SET status = 'succeeded', result = $1, updated_at = $2 WHERE id = $3`,
+        [JSON.stringify(result), new Date().toISOString(), step.id]
+      );
+      await emitEvent(m.created_by, event.kind, event.title, event.summary);
+      await finalizeMission(claimed[0].mission_id);
       console.log(`[${WORKER_ID}] ${kind} succeeded: ${step.id}`);
     } catch (err) {
       console.error(`[${WORKER_ID}] ${kind} failed:`, err.message);
-      await sb
-        .from("ops_mission_steps")
-        .update({
-          status: "failed",
-          error: err.message,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", step.id);
-      await emitEvent(mission.created_by, "step_failed", `Step failed: ${kind}`, err.message);
-      await finalizeMission(claimed.mission_id);
+      await query(
+        `UPDATE ops_mission_steps SET status = 'failed', error = $1, updated_at = $2 WHERE id = $3`,
+        [err.message, new Date().toISOString(), step.id]
+      );
+      await emitEvent(m.created_by, "step_failed", `Step failed: ${kind}`, err.message);
+      await finalizeMission(claimed[0].mission_id);
     }
 
     return;

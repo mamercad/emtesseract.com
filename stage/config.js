@@ -1,9 +1,7 @@
 /**
- * Supabase client config for Stage.
- * Replace with your project URL and anon key.
- * For production, copy config.example.js and add your values.
+ * Stage config — API base URL for local hosting.
+ * When running on Boomer: use http://localhost:8788 or http://boomer:8788
  */
 window.STAGE_CONFIG = {
-  supabaseUrl: "https://your-project.supabase.co",
-  supabaseAnonKey: "your-anon-key",
+  apiUrl: "http://localhost:8788",
 };
