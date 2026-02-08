@@ -47,16 +47,7 @@ Migration 015 (RLS) is skipped automatically when `DATABASE_URL` does not contai
 ## 4. Seed trigger rule
 
 ```bash
-psql "$DATABASE_URL" -c "
-INSERT INTO ops_trigger_rules (name, trigger_event, action_config, cooldown_minutes, enabled)
-VALUES (
-  'Proactive analyze',
-  'proactive_analyze_ops',
-  '{\"target_agent\": \"observer\", \"steps\": [{\"kind\": \"analyze\", \"payload\": {\"topic\": \"ops_health\"}}]}'::jsonb,
-  5,
-  true
-);
-"
+npm run seed
 ```
 
 ## 5. Run workers and API

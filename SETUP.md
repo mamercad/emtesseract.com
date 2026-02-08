@@ -21,7 +21,7 @@ OLLAMA_MODEL=qwen3-coder-next-32k
 
 # 3. Migrate, seed, run
 npm run migrate
-psql "$DATABASE_URL" -c "INSERT INTO ops_trigger_rules (name, trigger_event, action_config, cooldown_minutes, enabled) VALUES ('Proactive analyze', 'proactive_analyze_ops', '{\"target_agent\": \"observer\", \"steps\": [{\"kind\": \"analyze\", \"payload\": {\"topic\": \"ops_health\"}}]}'::jsonb, 5, true);"
+npm run seed
 cd workers && npm install && npm run heartbeat &
 cd workers && npm run worker &
 npm run api
