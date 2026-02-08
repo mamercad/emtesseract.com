@@ -97,7 +97,7 @@ async function handleApi(pathname, searchParams) {
     return { data: rows ?? [] };
   }
 
-  const chatSessionMatch = pathname.match(/^\/api\/chat\/session\/([a-f0-9-]+)$/);
+  const chatSessionMatch = pathname.match(/^\/api\/chat\/session\/([0-9a-f-]{36})$/);
   if (chatSessionMatch) {
     const sessionId = chatSessionMatch[1];
     const { rows } = await pool.query(

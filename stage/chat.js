@@ -1,12 +1,13 @@
 /**
  * Chat — conversational UI for emTesseract agents.
- * Sends messages to /api/chat, streams or displays assistant replies.
+ * Async: sends message, returns immediately, polls for response. History persists on server.
  */
 (function () {
   const { escapeHtml } = window.STAGE_UTILS;
   const config = window.STAGE_CONFIG || {};
   const apiUrl = (config.apiUrl ?? "").replace(/\/$/, "");
-  const CHAT_STORAGE_KEY = "emtesseract-chat";
+  const SESSION_STORAGE_KEY = "emtesseract-chat-sessions";
+  const POLL_INTERVAL_MS = 2000;
 
   const $agentsList = document.getElementById("chat-agents-list");
   const $messages = document.getElementById("chat-messages");
@@ -17,25 +18,25 @@
 
   let agentsCache = [];
   let selectedAgentId = null;
+  let sessionId = null;
   let messages = [];
   let isSending = false;
+  let pollTimer = null;
 
-  function loadHistory(agentId) {
+  function getSessionIds() {
     try {
-      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-      const data = raw ? JSON.parse(raw) : {};
-      return Array.isArray(data[agentId]) ? data[agentId] : [];
+      const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
     } catch {
-      return [];
+      return {};
     }
   }
 
-  function saveHistory(agentId, msgs) {
+  function setSessionId(agentId, sid) {
+    const data = getSessionIds();
+    data[agentId] = sid;
     try {
-      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-      const data = raw ? JSON.parse(raw) : {};
-      data[agentId] = msgs;
-      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(data));
     } catch (_) {}
   }
 
@@ -76,11 +77,24 @@
     });
   }
 
-  function selectAgent(id) {
+  async function loadSessionMessages(sid) {
+    try {
+      const { data } = await fetchApi(`/api/chat/session/${sid}`);
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function selectAgent(id) {
     selectedAgentId = id;
+    sessionId = getSessionIds()[id] || null;
     $send.disabled = !id;
     $input.disabled = !id;
-    messages = loadHistory(id);
+    messages = [];
+    if (sessionId) {
+      messages = await loadSessionMessages(sessionId);
+    }
     renderMessages();
     renderAgents();
   }
@@ -88,21 +102,29 @@
   function renderMessages() {
     $messages.querySelectorAll(".chat-msg").forEach((el) => el.remove());
     $welcome.hidden = messages.length > 0;
-    messages.forEach((m) => appendMessage(m.role, m.content, m.agentId || selectedAgentId, true));
+    messages.forEach((m) => {
+      const content = m.status === "pending" ? "" : m.content;
+      const isTyping = m.role === "assistant" && m.status === "pending";
+      appendMessageDom(m.role, content, selectedAgentId, isTyping);
+    });
     if (messages.length) $messages.scrollTop = $messages.scrollHeight;
   }
 
-  function appendMessage(role, content, agentId, skipPush) {
-    if (!skipPush) {
-      const msg = { role, content, agentId };
-      messages.push(msg);
-      if (selectedAgentId) saveHistory(selectedAgentId, messages);
-    }
+  function appendMessageDom(role, content, agentId, isTyping) {
     const el = document.createElement("div");
-    el.className = `chat-msg chat-msg--${role}`;
+    el.className = `chat-msg chat-msg--${role}${isTyping ? " chat-msg--typing" : ""}`;
     el.setAttribute("data-role", role);
     const agentLabel = role === "assistant" && agentId ? escapeHtml(agentId) : "";
-    el.innerHTML = `
+    el.innerHTML = isTyping
+      ? `
+      <div class="chat-msg__bubble">
+        <div class="chat-msg__content">
+          <span class="chat-typing-dot"></span>
+          <span class="chat-typing-dot"></span>
+          <span class="chat-typing-dot"></span>
+        </div>
+      </div>`
+      : `
       <div class="chat-msg__bubble">
         ${agentLabel ? `<span class="chat-msg__agent">${agentLabel}</span>` : ""}
         <div class="chat-msg__content">${escapeHtml(content).replace(/\n/g, "<br>")}</div>
@@ -112,24 +134,24 @@
     $messages.scrollTop = $messages.scrollHeight;
   }
 
-  function appendPlaceholder() {
-    const el = document.createElement("div");
-    el.className = "chat-msg chat-msg--assistant chat-msg--typing";
-    el.id = "chat-typing";
-    el.innerHTML = `
-      <div class="chat-msg__bubble">
-        <div class="chat-msg__content">
-          <span class="chat-typing-dot"></span>
-          <span class="chat-typing-dot"></span>
-          <span class="chat-typing-dot"></span>
-        </div>
-      </div>`;
-    $messages.appendChild(el);
-    $messages.scrollTop = $messages.scrollHeight;
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
   }
 
-  function removePlaceholder() {
-    document.getElementById("chat-typing")?.remove();
+  async function pollForResponse() {
+    if (!sessionId || !selectedAgentId) return;
+    const msgs = await loadSessionMessages(sessionId);
+    messages = msgs;
+    renderMessages();
+    const hasPending = msgs.some((m) => m.role === "assistant" && m.status === "pending");
+    if (!hasPending) {
+      stopPolling();
+      isSending = false;
+      $send.disabled = !selectedAgentId;
+    }
   }
 
   async function sendMessage() {
@@ -137,29 +159,29 @@
     if (!text || !selectedAgentId || isSending) return;
 
     $input.value = "";
-    appendMessage("user", text, selectedAgentId);
-    appendPlaceholder();
     isSending = true;
     $send.disabled = true;
 
     try {
-      const messagesForApi = messages
-        .filter((m) => m.role !== "typing")
-        .map((m) => ({ role: m.role, content: m.content }));
-      const { content } = await fetchApi("/api/chat", {
+      const { session_id: sid, assistant_message_id } = await fetchApi("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: messagesForApi,
+          session_id: sessionId || undefined,
           agent_id: selectedAgentId,
+          content: text,
         }),
       });
-      removePlaceholder();
-      appendMessage("assistant", content || "(no response)", selectedAgentId);
+
+      sessionId = sid;
+      setSessionId(selectedAgentId, sid);
+
+      messages = await loadSessionMessages(sid);
+      renderMessages();
+
+      pollTimer = setInterval(pollForResponse, POLL_INTERVAL_MS);
     } catch (err) {
-      removePlaceholder();
-      appendMessage("assistant", `Error: ${err.message}`, selectedAgentId);
-    } finally {
+      appendMessageDom("assistant", `Error: ${err.message}`, selectedAgentId, false);
       isSending = false;
       $send.disabled = !selectedAgentId;
     }
@@ -181,6 +203,13 @@
   async function init() {
     await loadAgents();
     setupForm();
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopPolling();
+      else if (isSending && sessionId) {
+        pollForResponse();
+        pollTimer = setInterval(pollForResponse, POLL_INTERVAL_MS);
+      }
+    });
   }
 
   init();

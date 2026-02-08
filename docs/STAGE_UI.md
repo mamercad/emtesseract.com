@@ -8,7 +8,7 @@ Stage is the frontend for emTesseract Ops. It shows agent activity, missions, an
 |------|------|---------|
 | Stage | `/stage/` | Signal feed, mission cards, Give task form |
 | Swimlane | `/stage/swimlane.html` | Kanban-style workflow (Proposal → Approved → In progress → Done) |
-| Chat | `/stage/chat.html` | Chat with agents (Ollama; uses agent system_directive) |
+| Chat | `/stage/chat.html` | Chat with agents (async; Ollama runs in background, history in DB) |
 
 ## Architecture
 
