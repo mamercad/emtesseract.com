@@ -164,12 +164,17 @@
           <div class="mission-card__steps">
             ${stepsByMission[m.id]
               .map(
-                (s) =>
-                  `<div class="mission-step">
+                (s) => {
+                  const draft = s.result?.draft;
+                  const analysis = s.result?.analysis;
+                  const content = draft ?? analysis;
+                  return `<div class="mission-step">
                 <span class="mission-step__status mission-step__status--${s.status}"></span>
                 <span class="mission-step__kind">${escapeHtml(s.kind)}</span>
                 <span>${s.status}</span>
-              </div>`
+                ${content ? `<div class="mission-step__result">${escapeHtml(content)}</div>` : ""}
+              </div>`;
+                }
               )
               .join("")}
           </div>`

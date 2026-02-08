@@ -315,7 +315,8 @@
 
 .mission-step {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--space-sm);
   font-size: 0.8rem;
   color: var(--text-300);
@@ -324,6 +325,19 @@
 
 .mission-step:last-child {
   margin-bottom: 0;
+}
+
+.mission-step__result {
+  flex: 1 1 100%;
+  margin-top: var(--space-xs);
+  padding: var(--space-sm);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--text-200);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .mission-step__kind {

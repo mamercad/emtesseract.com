@@ -89,7 +89,7 @@ async function handleApi(pathname, searchParams) {
     if (!missionIds.length) return { data: [] };
     const placeholders = missionIds.map((_, i) => `$${i + 1}`).join(", ");
     const { rows } = await pool.query(
-      `SELECT mission_id, kind, status FROM ops_mission_steps WHERE mission_id IN (${placeholders})`,
+      `SELECT mission_id, kind, status, payload, result FROM ops_mission_steps WHERE mission_id IN (${placeholders})`,
       missionIds
     );
     return { data: rows ?? [] };
