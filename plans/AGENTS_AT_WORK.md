@@ -8,10 +8,10 @@
 | Seed scripts | ✅ Done | `make deploy` runs seed; bootstrap observer trigger |
 | Stage frontend | ✅ Done | Feed, missions, swimlane, Give task, task IDs, flicker-free refresh |
 | Step worker | ✅ Done | Ollama-based, analyze + write_content |
-| Roundtable worker | ⏳ Pending | Conversation orchestration |
+| Roundtable worker | ✅ Done | Watercooler/standup/debate, memory distillation |
 | Domain workers | ⏳ Pending | x-autopost, content, crawl |
 
-**MVP:** Ollama on Boomer + step worker + seed. See `SETUP.md`, `docs/SEED_TRIGGERS.md`, `docs/STAGE_UI.md`.
+**MVP:** Ollama on Boomer + step worker + seed + roundtable + memory. See `SETUP.md`, `docs/SEED_TRIGGERS.md`, `docs/STAGE_UI.md`, `docs/ROUNDTABLE_AND_MEMORY.md`.
 
 ---
 

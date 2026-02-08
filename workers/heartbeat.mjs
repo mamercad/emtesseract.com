@@ -137,6 +137,43 @@ async function recoverStaleSteps() {
   return { recovered: stale.length };
 }
 
+// ── Enqueue roundtable ─────────────────────────────────────
+
+async function enqueueRoundtable() {
+  const { rows: recent } = await query(
+    `SELECT id FROM ops_roundtable_queue
+     WHERE created_at > now() - interval '1 hour'
+     LIMIT 1`
+  );
+  if (recent?.length) return { enqueued: 0 };
+
+  const { rows: agents } = await query(
+    "SELECT id FROM ops_agents WHERE enabled = true"
+  );
+  const ids = (agents || []).map((a) => a.id);
+  if (ids.length < 2) return { enqueued: 0 };
+
+  const n = 2 + Math.floor(Math.random() * Math.min(2, ids.length - 2));
+  const shuffled = [...ids].sort(() => Math.random() - 0.5);
+  const participants = shuffled.slice(0, n);
+
+  const topics = [
+    "how things are going",
+    "what we learned this week",
+    "upcoming priorities",
+    "quick sync",
+  ];
+  const topic = topics[Math.floor(Math.random() * topics.length)];
+
+  await query(
+    `INSERT INTO ops_roundtable_queue (format, topic, participants, status)
+     VALUES ('watercooler', $1, $2, 'pending')`,
+    [topic, participants]
+  );
+
+  return { enqueued: 1 };
+}
+
 // ── Stale roundtable recovery ──────────────────────────────
 
 async function recoverStaleRoundtables() {
@@ -168,6 +205,7 @@ async function runHeartbeat() {
   const jobs = [
     ["triggers", evaluateTriggers],
     ["reactions", processReactionQueue],
+    ["enqueue_roundtable", enqueueRoundtable],
     ["stale_steps", recoverStaleSteps],
     ["stale_roundtables", recoverStaleRoundtables],
   ];

@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "heartbeat": "node heartbeat.mjs",
-    "worker": "node step-worker.mjs"
+    "worker": "node step-worker.mjs",
+    "roundtable": "node roundtable-worker.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39",

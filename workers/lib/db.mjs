@@ -12,12 +12,12 @@ if (!url || !url.startsWith("postgres")) {
 
 export const pool = new pg.Pool({ connectionString: url });
 
-/** Run a query; returns { rows, error } */
+/** Run a query; returns { rows, rowCount, error } */
 export async function query(sql, params = []) {
   try {
     const res = await pool.query(sql, params);
-    return { rows: res.rows, error: null };
+    return { rows: res.rows, rowCount: res.rowCount, error: null };
   } catch (err) {
-    return { rows: null, error: err };
+    return { rows: null, rowCount: 0, error: err };
   }
 }

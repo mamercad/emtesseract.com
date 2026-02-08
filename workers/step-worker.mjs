@@ -23,16 +23,32 @@ async function emitEvent(agentId, kind, title, summary) {
   );
 }
 
+async function getAgentMemories(agentId, limit = 5) {
+  const { rows } = await query(
+    `SELECT type, content FROM ops_agent_memory
+     WHERE agent_id = $1 AND confidence >= 0.6
+     ORDER BY created_at DESC LIMIT $2`,
+    [agentId, limit]
+  );
+  return rows || [];
+}
+
 async function executeStep(step, mission) {
   const { kind, payload } = step;
   const agentId = mission.created_by;
+
+  const memories = await getAgentMemories(agentId);
+  const memoryContext =
+    memories.length > 0
+      ? `\n\nRelevant context from experience:\n${memories.map((m) => `- [${m.type}] ${m.content}`).join("\n")}\n`
+      : "";
 
   if (kind === "analyze") {
     const topic = payload.topic || payload.source || "general";
     const reply = await complete([
       {
         role: "user",
-        content: `You are an analyst at emTesseract (game dev company). In 2–3 sentences, analyze: "${topic}". Be concise.`,
+        content: `You are an analyst at emTesseract (game dev company).${memoryContext}\nIn 2–3 sentences, analyze: "${topic}". Be concise.`,
       },
     ]);
     return {
@@ -46,7 +62,7 @@ async function executeStep(step, mission) {
     const reply = await complete([
       {
         role: "user",
-        content: `You are the content writer at emTesseract, a family game development company. Write a short draft (2–4 sentences) for: "${topic}". Tone: engaging, clear, on-brand.`,
+        content: `You are the content writer at emTesseract, a family game development company.${memoryContext}\nWrite a short draft (2–4 sentences) for: "${topic}". Tone: engaging, clear, on-brand.`,
       },
     ]);
     return {

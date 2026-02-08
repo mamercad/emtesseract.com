@@ -7,19 +7,23 @@ const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3.2";
 
 /**
  * @param {Array<{role: string, content: string}>} messages
+ * @param {{ temperature?: number }} options
  * @returns {Promise<string>} Assistant reply text
  */
-export async function complete(messages) {
+export async function complete(messages, options = {}) {
+  const body = {
+    model: OLLAMA_MODEL,
+    messages,
+    stream: false,
+  };
+  if (options.temperature != null) body.temperature = options.temperature;
+
   let res;
   try {
     res = await fetch(`${OLLAMA_BASE}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        messages,
-        stream: false,
-      }),
+      body: JSON.stringify(body),
     });
   } catch (err) {
     throw new Error(`Ollama unreachable at ${OLLAMA_BASE}: ${err.cause?.message ?? err.message}`);

@@ -1,0 +1,15 @@
+[Unit]
+Description=emTesseract roundtable worker
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@PROJECT_ROOT@
+EnvironmentFile=@PROJECT_ROOT@/.env
+ExecStart=/usr/bin/env node workers/roundtable-worker.mjs
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
