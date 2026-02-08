@@ -269,10 +269,18 @@
             steps: [{ kind, payload: { topic } }],
           }),
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          showGiveTaskFeedback(res.ok ? "Invalid response" : `Request failed (${res.status})`, "error");
+          return;
+        }
 
         if (!res.ok) {
-          showGiveTaskFeedback(data.error || "Request failed", "error");
+          const msg = data.error || (res.status === 404 ? "API endpoint not found. Restart emtesseract-api." : "Request failed");
+          showGiveTaskFeedback(msg, "error");
           return;
         }
 
