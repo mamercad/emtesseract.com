@@ -40,6 +40,7 @@ if [[ -n "${DATABASE_URL:-}" ]]; then
   fi
 
   echo "Running migrations via psql (.env from $PROJECT_ROOT)"
+  echo "DATABASE_URL length: ${#DATABASE_URL}"
   echo "──────────────────────────────────────────"
 
   FAILED=0
@@ -49,7 +50,7 @@ if [[ -n "${DATABASE_URL:-}" ]]; then
     name="$(basename "$migration")"
     printf "  %-45s" "$name"
     set +e
-    err=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration" 2>&1)
+     err=$(psql -d "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration" 2>&1)
     rc=$?
     set -e
     if [[ $rc -eq 0 ]]; then
