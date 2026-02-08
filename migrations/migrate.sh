@@ -13,13 +13,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Load .env if it exists (grep avoids source parsing issues with special chars)
+# Load .env if it exists (set +H disables history expansion for passwords with !)
 if [[ -f "$PROJECT_ROOT/.env" ]]; then
+  set +H
   set -a
   while IFS= read -r line; do
     [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] && export "$line"
   done < <(grep -v '^#' "$PROJECT_ROOT/.env" | grep -v '^$')
   set +a
+  set -H 2>/dev/null || true
 fi
 
 # ── psql path (preferred) ────────────────────────────────────
