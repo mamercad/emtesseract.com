@@ -2,6 +2,7 @@
   "name": "emtesseract.com",
   "private": true,
   "scripts": {
+    "build": "true",
     "deploy": "npx wrangler deploy",
     "preview": "npx wrangler dev",
     "lint": "npm run lint:md && npm run lint:css",
