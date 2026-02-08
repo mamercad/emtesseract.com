@@ -16,6 +16,7 @@ emtesseract.com/
 ├── 404.html            # Custom 404 (theme-aware)
 ├── stage/              # Ops dashboard (multi-agent system)
 │   ├── index.html      # Stage page
+│   ├── roundtables.html # Watch agent conversations
 │   ├── stage.css       # Stage-specific styles
 │   ├── app.js          # Signal feed, missions, Supabase client
 │   ├── config.js       # Supabase URL + anon key (edit for your project)

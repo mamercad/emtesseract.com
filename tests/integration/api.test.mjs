@@ -30,4 +30,17 @@ describe("api integration", { skip: true }, () => {
     const data = await res.json();
     assert.ok(Array.isArray(data.data));
   });
+
+  it("GET /api/roundtables returns 200 and array", async () => {
+    const res = await fetchOk("/api/roundtables");
+    if (!res) return;
+    const data = await res.json();
+    assert.ok(Array.isArray(data.data));
+  });
+
+  it("GET /api/roundtables/:id returns 404 for unknown id", async () => {
+    const res = await fetch(`${BASE}/api/roundtables/00000000-0000-0000-0000-000000000000`);
+    if (!res) return;
+    assert.strictEqual(res.status, 404);
+  });
 });

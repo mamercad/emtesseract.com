@@ -182,6 +182,28 @@ async function handleApi(pathname, searchParams) {
     return { data: items.slice(0, 50) };
   }
 
+  /* Roundtables — agent-to-agent conversations */
+  if (pathname === "/api/roundtables") {
+    const { rows } = await pool.query(
+      `SELECT id, format, topic, participants, status, created_at, completed_at
+       FROM ops_roundtable_queue
+       ORDER BY created_at DESC LIMIT 50`
+    );
+    return { data: rows ?? [] };
+  }
+
+  const roundtableMatch = pathname.match(/^\/api\/roundtables\/([0-9a-f-]{36})$/);
+  if (roundtableMatch) {
+    const id = roundtableMatch[1];
+    const { rows } = await pool.query(
+      `SELECT id, format, topic, participants, status, history, created_at, completed_at
+       FROM ops_roundtable_queue WHERE id = $1`,
+      [id]
+    );
+    if (!rows?.length) return null;
+    return { data: rows[0] };
+  }
+
   return null;
 }
 

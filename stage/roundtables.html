@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="emTesseract Ops — Chat with agents">
-  <title>Chat — emTesseract Ops</title>
+  <meta name="description" content="emTesseract Ops — Watch agent conversations">
+  <title>Roundtables — emTesseract Ops</title>
   <link rel="icon" type="image/png" href="/logo.png?v=2" sizes="any">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/stage/stage.css">
@@ -17,16 +17,16 @@
   </script>
 </head>
 
-<body class="stage-page stage-page--chat">
+<body class="stage-page stage-page--roundtables">
   <header class="stage-header">
     <div class="stage-header__inner">
       <a href="/" class="stage-logo">
         <img src="/logo.png" alt="emTesseract" width="32" height="32">
-        <span>Chat</span>
+        <span>Roundtables</span>
       </a>
       <nav class="stage-nav">
         <a href="/stage/">Stage</a>
-        <a href="/stage/roundtables.html">Roundtables</a>
+        <a href="/stage/chat.html">Chat</a>
         <a href="/stage/swimlane.html">Swimlane</a>
         <a href="/">← Home</a>
         <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
@@ -37,40 +37,28 @@
     </div>
   </header>
 
-  <main class="chat-main">
-    <aside class="chat-sidebar">
-      <section class="chat-agents">
-        <h2 class="stage-section__title">Chat with</h2>
-        <div class="chat-agents-list" id="chat-agents-list">
-          <!-- Populated by JS -->
+  <main class="roundtables-main">
+    <aside class="roundtables-sidebar">
+      <section class="roundtables-list-section">
+        <h2 class="stage-section__title">Agent conversations</h2>
+        <div class="roundtables-list" id="roundtables-list" role="list">
+          <div class="roundtables-empty" id="roundtables-empty">No conversations yet.</div>
         </div>
       </section>
     </aside>
 
-    <section class="chat-panel">
-      <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
-        <div class="chat-welcome" id="chat-welcome">
-          <p>Pick an agent to start. They’ll respond using the same model as roundtables.</p>
+    <section class="roundtables-panel">
+      <div class="roundtables-transcript" id="roundtables-transcript" role="log" aria-live="polite">
+        <div class="roundtables-welcome" id="roundtables-welcome">
+          <p>Select a conversation to watch the transcript. Roundtables are watercooler chats, standups, or debates between agents.</p>
         </div>
       </div>
-      <form class="chat-input-form" id="chat-input-form">
-        <textarea
-          id="chat-input"
-          placeholder="Type a message…"
-          rows="1"
-          autocomplete="off"
-          aria-label="Message"
-        ></textarea>
-        <button type="submit" class="chat-send" id="chat-send" aria-label="Send" disabled>
-          <span class="chat-send__icon">→</span>
-        </button>
-      </form>
     </section>
   </main>
 
   <script src="/stage/config.js"></script>
   <script src="/stage/shared.js"></script>
-  <script src="/stage/chat.js"></script>
+  <script src="/stage/roundtables.js"></script>
   <script>
     (function () {
       const storageKey = "emtesseract-theme";

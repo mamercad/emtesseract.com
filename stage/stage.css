@@ -1043,3 +1043,171 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Roundtables — watch agent conversations */
+.stage-page--roundtables .stage-main {
+  grid-template-columns: 1fr;
+}
+
+.roundtables-main {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--space-xl);
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+  min-height: calc(100vh - 80px);
+}
+
+@media (max-width: 768px) {
+  .roundtables-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.roundtables-list-section {
+  padding-top: var(--space-md);
+}
+
+.roundtables-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.roundtables-empty {
+  padding: var(--space-2xl);
+  text-align: center;
+  color: var(--text-300);
+  font-size: 0.9375rem;
+}
+
+.roundtable-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.roundtable-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.roundtable-card--active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.roundtable-card__format {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.roundtable-card__format--watercooler { color: var(--accent); }
+.roundtable-card__format--standup { color: var(--stage-accent-pending); }
+.roundtable-card__format--debate { color: var(--stage-accent-fail); }
+
+.roundtable-card__topic {
+  font-weight: 600;
+  color: var(--text-100);
+}
+
+.roundtable-card__meta {
+  font-size: 0.8rem;
+  color: var(--text-300);
+}
+
+.roundtable-card__status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.roundtable-card__status--ok { color: var(--stage-accent-ok); }
+.roundtable-card__status--fail { color: var(--stage-accent-fail); }
+.roundtable-card__status--pending { color: var(--stage-accent-pending); }
+
+.roundtable-card__time {
+  font-size: 0.75rem;
+  color: var(--stage-accent-muted);
+}
+
+.roundtables-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.roundtables-welcome {
+  padding: var(--space-2xl);
+  text-align: center;
+  color: var(--text-300);
+  font-size: 0.9375rem;
+}
+
+.roundtables-transcript {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  min-height: 320px;
+  max-height: 70vh;
+}
+
+.roundtables-transcript-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: var(--stage-border);
+  font-size: 0.875rem;
+}
+
+.roundtables-transcript__format {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.roundtables-transcript__topic {
+  color: var(--text-200);
+}
+
+.roundtables-transcript__participants {
+  color: var(--text-300);
+}
+
+.roundtables-transcript-messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.roundtables-transcript-empty,
+.roundtables-transcript-error {
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--text-300);
+}
+
+.roundtables-transcript-error {
+  color: var(--stage-accent-fail);
+}
+
+.roundtable-msg .chat-msg__bubble {
+  max-width: 90%;
+}

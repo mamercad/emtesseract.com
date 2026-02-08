@@ -9,7 +9,7 @@
     "lint:md": "markdownlint --ignore node_modules \"**/*.md\"",
     "lint:css": "stylelint \"**/*.css\"",
     "test": "npm run test:html && npm run test:unit",
-    "test:html": "html-validate index.html 404.html",
+    "test:html": "html-validate index.html 404.html stage/*.html",
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:integration": "node --test tests/integration/db.test.mjs tests/integration/proposal-service.test.mjs",
     "test:all": "npm run test && npm run test:integration",
