@@ -1,0 +1,397 @@
+/**
+ * Stage — Ops dashboard
+ * Retro-futuristic / cyberpunk office aesthetic
+ */
+
+.stage-page {
+  --stage-accent-ok: #22c55e;
+  --stage-accent-pending: #f59e0b;
+  --stage-accent-fail: #ef4444;
+  --stage-accent-muted: #64748b;
+  --stage-border: 2px solid var(--text-100);
+  --stage-grid-bg: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    color-mix(in srgb, var(--accent) 4%, transparent) 2px,
+    color-mix(in srgb, var(--accent) 4%, transparent) 4px
+  );
+}
+
+[data-theme="dark"] .stage-page {
+  --stage-accent-ok: #4ade80;
+  --stage-accent-pending: #fbbf24;
+  --stage-accent-fail: #f87171;
+}
+
+/* Header */
+.stage-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: var(--space-md) var(--space-xl);
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: var(--stage-border);
+}
+
+.stage-header__inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stage-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: var(--text-100);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.stage-logo img {
+  width: 32px;
+  height: 32px;
+}
+
+.stage-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.stage-nav a {
+  color: var(--text-300);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.stage-nav a:hover {
+  color: var(--accent);
+}
+
+/* Main layout */
+.stage-main {
+  display: grid;
+  grid-template-columns: 200px 1fr 320px;
+  gap: var(--space-xl);
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+  min-height: calc(100vh - 80px);
+}
+
+@media (max-width: 1024px) {
+  .stage-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar — agents */
+.stage-sidebar {
+  padding-top: var(--space-md);
+}
+
+.stage-section__title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-300);
+  margin: 0 0 var(--space-md);
+}
+
+.agents-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.agent-avatar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-200);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.agent-avatar:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.agent-avatar__pixel {
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.agent-avatar[data-role="analyst"] .agent-avatar__pixel { background: var(--accent-muted); }
+.agent-avatar[data-role="engineer"] .agent-avatar__pixel { background: var(--stage-accent-ok); }
+.agent-avatar[data-role="project-manager"] .agent-avatar__pixel { background: var(--stage-accent-pending); }
+
+/* Signal feed */
+.stage-feed {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.stage-feed__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.stage-filters {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.stage-filters select {
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.875rem;
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-200);
+  cursor: pointer;
+}
+
+.feed-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: var(--space-sm);
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-md);
+  min-height: 320px;
+  max-height: 70vh;
+}
+
+.feed-empty,
+.missions-empty {
+  padding: var(--space-2xl);
+  text-align: center;
+  color: var(--text-300);
+  font-size: 0.9375rem;
+}
+
+.feed-item {
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-bottom: 1px solid color-mix(in srgb, var(--text-100) 15%, transparent);
+  font-size: 0.875rem;
+  animation: feed-item-in 0.35s var(--ease-out);
+}
+
+.feed-item:last-child {
+  border-bottom: none;
+}
+
+@keyframes feed-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feed-item__kind {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  min-width: 5ch;
+}
+
+.feed-item__agent {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--text-200);
+}
+
+.feed-item__content {
+  flex: 1;
+  color: var(--text-300);
+}
+
+.feed-item__time {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--stage-accent-muted);
+}
+
+/* Missions */
+.stage-missions {
+  display: flex;
+  flex-direction: column;
+}
+
+.stage-missions__header {
+  margin-bottom: var(--space-md);
+}
+
+.missions-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 70vh;
+}
+
+.mission-card {
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.mission-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.mission-card__title {
+  font-weight: 700;
+  color: var(--text-100);
+  margin: 0 0 var(--space-xs);
+}
+
+.mission-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.75rem;
+  color: var(--text-300);
+  margin-bottom: var(--space-sm);
+}
+
+.mission-card__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.mission-card__status--approved { background: color-mix(in srgb, var(--stage-accent-pending) 25%, transparent); color: var(--stage-accent-pending); }
+.mission-card__status--running { background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--accent); }
+.mission-card__status--succeeded { background: color-mix(in srgb, var(--stage-accent-ok) 25%, transparent); color: var(--stage-accent-ok); }
+.mission-card__status--failed { background: color-mix(in srgb, var(--stage-accent-fail) 25%, transparent); color: var(--stage-accent-fail); }
+
+.mission-card__steps {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid color-mix(in srgb, var(--text-100) 12%, transparent);
+}
+
+.mission-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.8rem;
+  color: var(--text-300);
+  margin-bottom: var(--space-xs);
+}
+
+.mission-step:last-child {
+  margin-bottom: 0;
+}
+
+.mission-step__kind {
+  font-weight: 600;
+  min-width: 6ch;
+}
+
+.mission-step__status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mission-step__status--queued { background: var(--stage-accent-muted); }
+.mission-step__status--running { background: var(--accent); animation: pulse 1.5s ease-in-out infinite; }
+.mission-step__status--succeeded { background: var(--stage-accent-ok); }
+.mission-step__status--failed { background: var(--stage-accent-fail); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Setup overlay */
+.stage-setup {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--bg) 85%, black);
+  backdrop-filter: blur(8px);
+}
+
+.stage-setup[hidden] {
+  display: none;
+}
+
+.stage-setup__card {
+  max-width: 420px;
+  padding: var(--space-2xl);
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.stage-setup__card h2 {
+  margin: 0 0 var(--space-md);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.stage-setup__card p {
+  margin: 0 0 var(--space-md);
+  font-size: 0.9375rem;
+  color: var(--text-300);
+}
+
+.stage-setup__card p:last-child {
+  margin-bottom: 0;
+}
+
+.stage-setup__card code {
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--text-100) 10%, transparent);
+  border-radius: 4px;
+  font-size: 0.85em;
+}

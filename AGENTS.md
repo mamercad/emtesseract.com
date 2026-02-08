@@ -14,13 +14,21 @@ emtesseract.com/
 ├── style.css           # All styles
 ├── logo.png            # Site logo
 ├── 404.html            # Custom 404 (theme-aware)
+├── stage/              # Ops dashboard (multi-agent system)
+│   ├── index.html      # Stage page
+│   ├── stage.css       # Stage-specific styles
+│   ├── app.js          # Signal feed, missions, Supabase client
+│   ├── config.js       # Supabase URL + anon key (edit for your project)
+│   └── config.example.js
+├── workers/            # Node.js workers (heartbeat, proposal-service)
+├── migrations/         # Supabase SQL migrations (ops_*)
+├── plans/              # AGENTS_AT_WORK.md (tutorial reference)
 ├── wrangler.toml       # Cloudflare Workers config
 ├── package.json        # npm scripts (deploy, preview)
-├── DEPLOY.md           # Deployment guide
 ├── assets/
-│   └── css/variables.css  # Design tokens (light/dark)
-├── .cursor/            # Cursor rules and skills
-└── .vscode/            # Tasks, settings
+│   └── css/variables.css
+├── .cursor/
+└── .vscode/
 ```
 
 ## Design
@@ -60,4 +68,16 @@ npm run deploy
 ```bash
 python3 -m http.server 8000
 # Open http://localhost:8000
+# Stage: http://localhost:8000/stage/
 ```
+
+## Stage (Ops Dashboard)
+
+`/stage/` shows the multi-agent ops system: signal feed (events), missions list, agent avatars. Requires Supabase:
+
+1. Edit `stage/config.js` with your Supabase URL and anon key
+2. Run migrations in `migrations/`
+3. Configure RLS for `ops_agent_events`, `ops_missions`, `ops_mission_steps`, `ops_agents`
+4. For realtime: enable Replication for `ops_agent_events` in Supabase
+
+See `SETUP.md` for step-by-step setup. See `plans/AGENTS_AT_WORK.md` for the full system architecture.

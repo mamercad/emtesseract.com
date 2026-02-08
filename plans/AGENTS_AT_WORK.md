@@ -1,3 +1,21 @@
+# Project Status (emtesseract.com)
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Migrations | ✅ Done | 001–014 applied |
+| Proposal service | ✅ Done | Cap gates, auto-approve |
+| Heartbeat | ✅ Done | Triggers, reactions, recovery |
+| Seed scripts | ⏳ Pending | Trigger rule (SQL in SETUP.md) |
+| Stage frontend | ✅ Done | Signal feed, missions, filters |
+| Step worker | ✅ Done | Ollama-based, analyzes steps |
+| Roundtable worker | ⏳ Pending | Conversation orchestration |
+| Domain workers | ⏳ Pending | x-autopost, content, crawl |
+
+**MVP:** Ollama on Boomer + step worker. See `SETUP.md`.
+
+---
+
+# Tutorial Reference (original)
 
 Vox
 @Voxyz_ai

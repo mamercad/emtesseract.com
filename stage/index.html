@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="emTesseract Ops — Agent activity dashboard">
+  <title>Stage — emTesseract Ops</title>
+  <link rel="icon" type="image/png" href="/logo.png?v=2" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/stage/stage.css">
+  <script>
+    (function () {
+      var t = localStorage.getItem("emtesseract-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+
+<body class="stage-page">
+  <header class="stage-header">
+    <div class="stage-header__inner">
+      <a href="/" class="stage-logo">
+        <img src="/logo.png" alt="emTesseract" width="32" height="32">
+        <span>Stage</span>
+      </a>
+      <nav class="stage-nav">
+        <a href="/">← Home</a>
+        <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
+          <span class="theme-toggle__icon">🌙</span>
+          <span class="theme-toggle__label">Dark</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="stage-main">
+    <aside class="stage-sidebar">
+      <section class="stage-agents">
+        <h2 class="stage-section__title">Agents</h2>
+        <div class="agents-grid" id="agents-grid">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+    </aside>
+
+    <section class="stage-feed">
+      <div class="stage-feed__header">
+        <h2 class="stage-section__title">Signal Feed</h2>
+        <div class="stage-filters">
+          <select id="filter-agent" aria-label="Filter by agent">
+            <option value="">All agents</option>
+          </select>
+          <select id="filter-kind" aria-label="Filter by kind">
+            <option value="">All kinds</option>
+          </select>
+        </div>
+      </div>
+      <div class="feed-list" id="feed-list" role="list">
+        <div class="feed-empty" id="feed-empty">No events yet.</div>
+      </div>
+    </section>
+
+    <section class="stage-missions">
+      <div class="stage-missions__header">
+        <h2 class="stage-section__title">Missions</h2>
+      </div>
+      <div class="missions-list" id="missions-list" role="list">
+        <div class="missions-empty" id="missions-empty">No missions yet.</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="stage-setup" id="stage-setup" hidden>
+    <div class="stage-setup__card">
+      <h2>Configure Stage</h2>
+      <p>Edit <code>stage/config.js</code> and add your Supabase URL and anon key.</p>
+      <p>Ensure RLS policies allow <code>SELECT</code> on <code>ops_agent_events</code>, <code>ops_missions</code>, <code>ops_mission_steps</code>, and <code>ops_agents</code>.</p>
+      <p>For realtime events: enable Realtime for <code>ops_agent_events</code> in Supabase Dashboard → Database → Replication.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/stage/config.js"></script>
+  <script src="/stage/app.js"></script>
+  <script>
+    (function () {
+      const storageKey = "emtesseract-theme";
+      const getPreferred = () =>
+        localStorage.getItem(storageKey) ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const setTheme = (theme) => {
+        document.documentElement.setAttribute("data-theme", theme);
+        const btn = document.querySelector(".theme-toggle");
+        if (btn) {
+          btn.querySelector(".theme-toggle__icon").textContent = theme === "dark" ? "☀️" : "🌙";
+          btn.querySelector(".theme-toggle__label").textContent = theme === "dark" ? "Light" : "Dark";
+        }
+        localStorage.setItem(storageKey, theme);
+      };
+      setTheme(getPreferred());
+      document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+        setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+
+</html>
