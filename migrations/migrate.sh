@@ -39,8 +39,10 @@ if [[ -n "${DATABASE_URL:-}" ]]; then
   for migration in "$SCRIPT_DIR"/[0-9]*.sql; do
     name="$(basename "$migration")"
     printf "  %-45s" "$name"
+    set +e
     err=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$migration" 2>&1)
     rc=$?
+    set -e
     if [[ $rc -eq 0 ]]; then
       echo "OK"
       SUCCEEDED=$((SUCCEEDED + 1))
