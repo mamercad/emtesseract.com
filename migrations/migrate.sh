@@ -20,7 +20,10 @@ if [[ -f "$PROJECT_ROOT/.env" ]]; then
   while IFS= read -r line; do
     line="${line%%[[:space:]]*}"
     if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
-      export "${BASH_REMATCH[1]}=${BASH_REMATCH[2]}"
+      val="${BASH_REMATCH[2]}"
+      val="${val#\'}"; val="${val%\'}"
+      val="${val#\"}"; val="${val%\"}"
+      export "${BASH_REMATCH[1]}=$val"
     fi
   done < <(grep -v '^#' "$PROJECT_ROOT/.env" | grep -v '^$')
   set +a
