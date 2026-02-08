@@ -1,4 +1,4 @@
--- Seed default trigger rule (idempotent)
+-- Seed default trigger rules (idempotent)
 INSERT INTO ops_trigger_rules (name, trigger_event, action_config, cooldown_minutes, enabled)
 SELECT
   'Proactive analyze',
@@ -7,3 +7,12 @@ SELECT
   5,
   true
 WHERE NOT EXISTS (SELECT 1 FROM ops_trigger_rules WHERE name = 'Proactive analyze');
+
+INSERT INTO ops_trigger_rules (name, trigger_event, action_config, cooldown_minutes, enabled)
+SELECT
+  'Proactive content draft',
+  'proactive_draft_content',
+  '{"target_agent": "writer", "steps": [{"kind": "write_content", "payload": {"topic": "weekly game dev update"}}]}'::jsonb,
+  10,
+  true
+WHERE NOT EXISTS (SELECT 1 FROM ops_trigger_rules WHERE name = 'Proactive content draft');

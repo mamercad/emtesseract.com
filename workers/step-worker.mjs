@@ -9,7 +9,7 @@ import { complete } from "./lib/llm.mjs";
 
 const WORKER_ID = process.env.WORKER_ID || "step-worker-1";
 const POLL_MS = parseInt(process.env.POLL_INTERVAL_MS || "15000", 10);
-const STEP_KINDS = ["analyze"]; // MVP: only analyze
+const STEP_KINDS = ["analyze", "write_content"];
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -38,6 +38,20 @@ async function executeStep(step, mission) {
     return {
       result: { analysis: reply },
       event: { kind: "analyze_complete", title: `Analyzed: ${topic}`, summary: reply.slice(0, 200) },
+    };
+  }
+
+  if (kind === "write_content") {
+    const topic = payload.topic || payload.brief || "company update";
+    const reply = await complete([
+      {
+        role: "user",
+        content: `You are the content writer at emTesseract, a family game development company. Write a short draft (2–4 sentences) for: "${topic}". Tone: engaging, clear, on-brand.`,
+      },
+    ]);
+    return {
+      result: { draft: reply },
+      event: { kind: "write_content_complete", title: `Draft: ${topic}`, summary: reply.slice(0, 200) },
     };
   }
 

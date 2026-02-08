@@ -14,6 +14,16 @@ async function getPolicy(key) {
 const ALLOWED_TABLES = ["ops_tweet_metrics", "ops_mission_steps"];
 const ALLOWED_DATE_COLS = ["created_at", "posted_at"];
 
+async function countTodayByKind(kind) {
+  const startOfDay = new Date();
+  startOfDay.setUTCHours(0, 0, 0, 0);
+  const { rows, error } = await query(
+    "SELECT COUNT(*)::int FROM ops_mission_steps WHERE kind = $1 AND created_at >= $2",
+    [kind, startOfDay.toISOString()]
+  );
+  return error ? 0 : (rows?.[0]?.count ?? 0);
+}
+
 async function countToday(table, column = "created_at") {
   if (!ALLOWED_TABLES.includes(table) || !ALLOWED_DATE_COLS.includes(column)) return 0;
   const startOfDay = new Date();
@@ -39,7 +49,7 @@ const STEP_KIND_GATES = {
   write_content: async () => {
     const policy = await getPolicy("content_policy");
     if (!policy.enabled) return { ok: true };
-    const drafts = await countToday("ops_mission_steps");
+    const drafts = await countTodayByKind("write_content");
     if (drafts >= (policy.max_drafts_per_day ?? 8)) {
       return { ok: false, reason: `Content draft quota full` };
     }
