@@ -96,29 +96,33 @@
 
   // ── Signal feed ───────────────────────────────────────────
 
-  async function loadEvents() {
+  async function loadEvents(opts = {}) {
+    const fullReplace = opts.fullReplace ?? false;
     const params = {};
     if ($filterAgent?.value) params.agent_id = $filterAgent.value;
     if ($filterKind?.value) params.kind = $filterKind.value;
 
     try {
       const { data } = await fetchApi("/api/ops_agent_events", params);
-      eventKinds = new Set((data || []).map((e) => e.kind));
+      const events = data || [];
+      eventKinds = new Set(events.map((e) => e.kind));
       populateKindFilter();
 
-      $feedEmpty.hidden = (data || []).length > 0;
-      $feedList.querySelectorAll(".feed-item").forEach((el) => el.remove());
+      $feedEmpty.hidden = events.length > 0;
 
-      (data || []).forEach((e) => appendFeedItem(e));
+      if (fullReplace) {
+        $feedList.querySelectorAll(".feed-item").forEach((el) => el.remove());
+        events.forEach((e) => appendFeedItem(e, "append"));
+      } else {
+        const newEvents = events.filter((e) => !$feedList.querySelector(`[data-id="${e.id}"]`));
+        for (let i = newEvents.length - 1; i >= 0; i--) appendFeedItem(newEvents[i], "prepend");
+      }
     } catch (err) {
       console.error("Events load failed:", err);
     }
   }
 
-  function appendFeedItem(e) {
-    const existing = $feedList.querySelector(`[data-id="${e.id}"]`);
-    if (existing) return;
-
+  function appendFeedItem(e, mode) {
     const item = document.createElement("div");
     item.className = "feed-item feed-item--new";
     item.dataset.id = e.id;
@@ -128,7 +132,11 @@
       <span class="feed-item__agent">${escapeHtml(e.agent_id)}</span>
       <span class="feed-item__content">${escapeHtml(e.title)}${e.summary ? ": " + escapeHtml(e.summary) : ""}</span>
       <span class="feed-item__time">${formatTime(e.created_at)}</span>`;
-    $feedList.appendChild(item);
+    if (mode === "prepend") {
+      $feedList.insertBefore(item, $feedList.firstChild);
+    } else {
+      $feedList.appendChild(item);
+    }
   }
 
   function populateKindFilter() {
@@ -145,6 +153,37 @@
   }
 
   // ── Missions ─────────────────────────────────────────────
+
+  function missionCardHtml(m, stepsByMission) {
+    const steps = stepsByMission[m.id] || [];
+    const stepsHtml = steps.length
+      ? `
+          <div class="mission-card__steps">
+            ${steps
+              .map((s) => {
+                const draft = s.result?.draft;
+                const analysis = s.result?.analysis;
+                const content = draft ?? analysis;
+                return `<div class="mission-step">
+                <span class="mission-step__status mission-step__status--${s.status}"></span>
+                <span class="mission-step__kind">${escapeHtml(s.kind)}</span>
+                <span>${s.status}</span>
+                ${content ? `<div class="mission-step__result">${escapeHtml(content)}</div>` : ""}
+              </div>`;
+              })
+              .join("")}
+          </div>`
+      : "";
+    return `
+        <h3 class="mission-card__title">${escapeHtml(m.title)}</h3>
+        <div class="mission-card__meta">
+          <span class="mission-card__status mission-card__status--${m.status}">${m.status}</span>
+          <span class="mission-card__id" title="${m.id}">${m.id.slice(0, 8)}</span>
+          <span>${escapeHtml(m.created_by)}</span>
+          <span>${formatTime(m.created_at)}</span>
+        </div>
+        ${stepsHtml}`;
+  }
 
   async function loadMissions() {
     try {
@@ -176,42 +215,38 @@
           : new Set();
       previousMissionIds = currentMissionIds;
 
-      $missionsList.innerHTML = missions
-        .map(
-          (m) => `
-        <article class="mission-card ${newMissionIds.has(m.id) ? "mission-card--new" : ""}" id="mission-${m.id}" data-id="${m.id}">
-          <h3 class="mission-card__title">${escapeHtml(m.title)}</h3>
-          <div class="mission-card__meta">
-            <span class="mission-card__status mission-card__status--${m.status}">${m.status}</span>
-            <span class="mission-card__id" title="${m.id}">${m.id.slice(0, 8)}</span>
-            <span>${escapeHtml(m.created_by)}</span>
-            <span>${formatTime(m.created_at)}</span>
-          </div>
-          ${
-            stepsByMission[m.id]?.length
-              ? `
-          <div class="mission-card__steps">
-            ${stepsByMission[m.id]
-              .map(
-                (s) => {
-                  const draft = s.result?.draft;
-                  const analysis = s.result?.analysis;
-                  const content = draft ?? analysis;
-                  return `<div class="mission-step">
-                <span class="mission-step__status mission-step__status--${s.status}"></span>
-                <span class="mission-step__kind">${escapeHtml(s.kind)}</span>
-                <span>${s.status}</span>
-                ${content ? `<div class="mission-step__result">${escapeHtml(content)}</div>` : ""}
-              </div>`;
-                }
-              )
-              .join("")}
-          </div>`
-              : ""
+      const existingCards = new Map();
+      $missionsList.querySelectorAll(".mission-card").forEach((el) => {
+        const id = el.dataset.id;
+        if (id) existingCards.set(id, el);
+      });
+
+      for (let i = 0; i < missions.length; i++) {
+        const m = missions[i];
+        const isNew = newMissionIds.has(m.id);
+        let card = existingCards.get(m.id);
+        if (card) {
+          card.className = `mission-card ${isNew ? "mission-card--new" : ""}`;
+          card.innerHTML = missionCardHtml(m, stepsByMission);
+        } else {
+          card = document.createElement("article");
+          card.className = `mission-card ${isNew ? "mission-card--new" : ""}`;
+          card.id = `mission-${m.id}`;
+          card.dataset.id = m.id;
+          card.innerHTML = missionCardHtml(m, stepsByMission);
+          const nextMission = missions[i + 1];
+          const nextCard = nextMission ? existingCards.get(nextMission.id) : null;
+          if (nextCard) {
+            $missionsList.insertBefore(card, nextCard);
+          } else {
+            $missionsList.appendChild(card);
           }
-        </article>`
-        )
-        .join("");
+        }
+      }
+
+      existingCards.forEach((card, id) => {
+        if (!currentMissionIds.has(id)) card.remove();
+      });
     } catch (err) {
       console.error("Missions load failed:", err);
     }
@@ -313,13 +348,30 @@
     await loadEvents();
     await loadMissions();
 
-    $filterAgent?.addEventListener("change", loadEvents);
-    $filterKind?.addEventListener("change", loadEvents);
+    $filterAgent?.addEventListener("change", () => loadEvents({ fullReplace: true }));
+    $filterKind?.addEventListener("change", () => loadEvents({ fullReplace: true }));
     setupGiveTask();
 
-    // Poll instead of realtime (no Supabase)
-    setInterval(loadEvents, 10000);
-    setInterval(loadMissions, 30000);
+    // Poll when visible; pause when tab hidden (flicker-free incremental updates)
+    const POLL_EVENTS_MS = 10000;
+    const POLL_MISSIONS_MS = 20000;
+    let eventsInterval;
+    let missionsInterval;
+
+    function startPolling() {
+      if (!eventsInterval) eventsInterval = setInterval(() => loadEvents(), POLL_EVENTS_MS);
+      if (!missionsInterval) missionsInterval = setInterval(loadMissions, POLL_MISSIONS_MS);
+    }
+    function stopPolling() {
+      if (eventsInterval) clearInterval(eventsInterval);
+      eventsInterval = null;
+      if (missionsInterval) clearInterval(missionsInterval);
+      missionsInterval = null;
+    }
+    document.addEventListener("visibilitychange", () => {
+      document.hidden ? stopPolling() : startPolling();
+    });
+    startPolling();
   }
 
   init();

@@ -80,17 +80,54 @@
         done: document.getElementById("lane-done"),
       };
 
+      const labelByStage = {
+        proposal: "Proposal",
+        approved: "Approved",
+        in_progress: "In progress",
+        done: "Done",
+      };
+
+      const counts = { proposal: 0, approved: 0, in_progress: 0, done: 0 };
+      for (const item of items) {
+        if (counts[item.stage] !== undefined) counts[item.stage]++;
+      }
+      for (const [stage, count] of Object.entries(counts)) {
+        const col = document.querySelector(`.swimlane-column[data-stage="${stage}"]`);
+        const title = col?.querySelector(".swimlane-column__title");
+        if (title) title.textContent = `${labelByStage[stage]} (${count})`;
+      }
+
+      const itemsById = new Map(items.map((it) => [it.id, it]));
+      const existingCards = new Map();
       for (const lane of Object.values(lanes)) {
-        lane.innerHTML = "";
+        lane.querySelectorAll("[data-id]").forEach((el) => {
+          existingCards.set(el.dataset.id, { card: el, lane });
+        });
       }
 
       for (const item of items) {
         const lane = lanes[item.stage];
-        if (lane) {
-          const card = renderCard(item);
+        if (!lane) continue;
+
+        const existing = existingCards.get(item.id);
+        let card;
+        if (existing) {
+          card = existing.card;
+          if (existing.lane !== lane) {
+            existing.lane.removeChild(card);
+            lane.appendChild(card);
+          }
+          card.className = `swimlane-card swimlane-card--${item.stage} swimlane-card--${item.status}`;
+          card.innerHTML = renderCard(item).innerHTML;
+        } else {
+          card = renderCard(item);
           lane.appendChild(card);
         }
       }
+
+      existingCards.forEach(({ card }, id) => {
+        if (!itemsById.has(id)) card.remove();
+      });
     } catch (err) {
       console.error("Work items load failed:", err);
       $board.hidden = true;
@@ -99,6 +136,20 @@
     }
   }
 
+  const POLL_MS = 15000;
+  let pollInterval;
+
+  function startPolling() {
+    if (!pollInterval) pollInterval = setInterval(loadWorkItems, POLL_MS);
+  }
+  function stopPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = null;
+  }
+  document.addEventListener("visibilitychange", () => {
+    document.hidden ? stopPolling() : startPolling();
+  });
+
   loadWorkItems();
-  setInterval(loadWorkItems, 15000);
+  startPolling();
 })();
