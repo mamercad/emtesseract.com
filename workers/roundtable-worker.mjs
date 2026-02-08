@@ -94,7 +94,7 @@ async function runConversation(session) {
     );
 
     const dialogue = sanitize(reply, MAX_TURN_CHARS);
-    history.push({ speaker, dialogue, turn });
+    history.push({ speaker, dialogue, turn, created_at: new Date().toISOString() });
     lastSpeaker = speaker;
 
     await emitEvent(

@@ -44,6 +44,12 @@
     return map[status] || "pending";
   }
 
+  function formatTimeExact(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+  }
+
   function renderList(items) {
     if (!items?.length) {
       $empty.hidden = false;
@@ -94,7 +100,10 @@
             (h) =>
               `<div class="chat-msg chat-msg--assistant roundtable-msg">
                 <div class="chat-msg__bubble">
-                  <span class="chat-msg__agent">${escapeHtml(agentName(h.speaker))}</span>
+                  <span class="chat-msg__meta">
+                    <span class="chat-msg__agent">${escapeHtml(agentName(h.speaker))}</span>
+                    ${h.created_at ? `<span class="chat-msg__time" title="${escapeHtml(h.created_at)}">${escapeHtml(formatTimeExact(h.created_at))}</span>` : ""}
+                  </span>
                   <span class="chat-msg__content">${escapeHtml(h.dialogue || "")}</span>
                 </div>
               </div>`

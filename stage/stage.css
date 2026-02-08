@@ -937,6 +937,26 @@
   margin-bottom: var(--space-xs);
 }
 
+.chat-msg__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-xs);
+}
+
+.chat-msg__meta .chat-msg__agent {
+  margin-bottom: 0;
+}
+
+.chat-msg__time {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--stage-accent-muted);
+  flex-shrink: 0;
+}
+
 .chat-msg__content {
   word-break: break-word;
 }
