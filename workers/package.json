@@ -1,0 +1,13 @@
+{
+  "name": "emtesseract-workers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "heartbeat": "node heartbeat.mjs",
+    "worker": "node step-worker.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39",
+    "@supabase/supabase-js": "^2"
+  }
+}
