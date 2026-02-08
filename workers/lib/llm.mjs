@@ -10,15 +10,20 @@ const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3.2";
  * @returns {Promise<string>} Assistant reply text
  */
 export async function complete(messages) {
-  const res = await fetch(`${OLLAMA_BASE}/api/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      messages,
-      stream: false,
-    }),
-  });
+  let res;
+  try {
+    res = await fetch(`${OLLAMA_BASE}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        messages,
+        stream: false,
+      }),
+    });
+  } catch (err) {
+    throw new Error(`Ollama unreachable at ${OLLAMA_BASE}: ${err.cause?.message ?? err.message}`);
+  }
 
   if (!res.ok) {
     const err = await res.text();

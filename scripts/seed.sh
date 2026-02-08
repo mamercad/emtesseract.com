@@ -35,5 +35,6 @@ if ! command -v psql &>/dev/null; then
 fi
 
 echo "Seeding..."
+psql -d "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SCRIPT_DIR/seed-agents.sql"
 psql -d "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SCRIPT_DIR/seed-trigger.sql"
 echo "✓ Done."
