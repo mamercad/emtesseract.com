@@ -64,6 +64,22 @@
     <section class="stage-missions">
       <div class="stage-missions__header">
         <h2 class="stage-section__title">Missions</h2>
+        <button type="button" class="give-task-toggle" id="give-task-toggle" aria-expanded="false">Give task</button>
+      </div>
+      <div class="give-task-form" id="give-task-form" hidden>
+        <form id="give-task-form-inner">
+          <select id="give-task-agent" required aria-label="Agent">
+            <option value="">Select agent</option>
+          </select>
+          <input type="text" id="give-task-title" placeholder="Task title" aria-label="Task title">
+          <select id="give-task-kind" aria-label="Step kind">
+            <option value="analyze">Analyze</option>
+            <option value="write_content">Write content</option>
+          </select>
+          <input type="text" id="give-task-topic" placeholder="Topic or brief" required aria-label="Topic">
+          <button type="submit" class="give-task-submit">Submit</button>
+        </form>
+        <div class="give-task-feedback" id="give-task-feedback" hidden></div>
       </div>
       <div class="missions-list" id="missions-list" role="list">
         <div class="missions-empty" id="missions-empty">No missions yet.</div>

@@ -8,6 +8,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
+import { createProposal } from "../workers/lib/proposal-service.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -98,11 +99,61 @@ async function handleApi(pathname, searchParams) {
   return null;
 }
 
+async function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch {
+        reject(new Error("Invalid JSON"));
+      }
+    });
+    req.on("error", reject);
+  });
+}
+
+async function handlePostProposals(body) {
+  const agentId = body.agent_id;
+  const title = body.title || "[human] Task";
+  const steps = body.steps;
+
+  if (!agentId || !Array.isArray(steps) || steps.length === 0) {
+    return { status: 400, json: { error: "agent_id and steps[] required" } };
+  }
+
+  const proposedSteps = steps.map((s) => ({
+    kind: s.kind || "analyze",
+    payload: s.payload ?? (s.topic ? { topic: s.topic } : {}),
+  }));
+
+  try {
+    const result = await createProposal({ agentId, title, proposedSteps });
+    return { status: 200, json: result };
+  } catch (err) {
+    return { status: 500, json: { error: err.message } };
+  }
+}
+
 async function handler(req, res) {
   const url = new URL(req.url || "/", `http://${req.headers.host}`);
   const pathname = url.pathname;
 
   if (pathname.startsWith("/api/")) {
+    if (req.method === "POST" && pathname === "/api/proposals") {
+      try {
+        const body = await readJsonBody(req);
+        const { status, json } = await handlePostProposals(body);
+        res.writeHead(status, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(json));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || "Bad request" }));
+      }
+      return;
+    }
+
     const json = await handleApi(pathname, url.searchParams);
     if (json) {
       res.writeHead(200, { "Content-Type": "application/json" });

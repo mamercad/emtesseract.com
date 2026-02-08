@@ -357,6 +357,111 @@
 .mission-step__status--succeeded { background: var(--stage-accent-ok); }
 .mission-step__status--failed { background: var(--stage-accent-fail); }
 
+/* New content highlight */
+.feed-item--new {
+  animation: item-new 2s ease-out;
+}
+
+.mission-card--new {
+  animation: item-new 2s ease-out;
+}
+
+@keyframes item-new {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  30% {
+    box-shadow: 0 0 12px 2px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+
+/* Give task form */
+.stage-missions__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.give-task-toggle {
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  background: transparent;
+  border: var(--stage-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.give-task-toggle:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.give-task-form {
+  margin-bottom: var(--space-md);
+  padding: var(--space-md);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border: var(--stage-border);
+  border-radius: var(--radius-md);
+}
+
+.give-task-form form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.give-task-form select,
+.give-task-form input[type="text"] {
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.875rem;
+  background: var(--bg-card);
+  border: var(--stage-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-200);
+}
+
+.give-task-form input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+}
+
+.give-task-submit {
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.give-task-submit:hover {
+  filter: brightness(1.1);
+}
+
+.give-task-feedback {
+  margin-top: var(--space-sm);
+  font-size: 0.8rem;
+}
+
+.give-task-feedback--success {
+  color: var(--stage-accent-ok);
+}
+
+.give-task-feedback--error {
+  color: var(--stage-accent-fail);
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
