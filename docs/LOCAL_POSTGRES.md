@@ -60,7 +60,13 @@ cd workers && npm run worker &
 cd .. && npm run api &
 ```
 
-Or with systemd/supervisor for production.
+Or with systemd for production:
+
+```bash
+make deploy
+```
+
+This does: deps → migrate → seed → install (systemd). Uses `systemctl restart` so services pick up new code on re-deploy.
 
 ## 6. Stage dashboard
 

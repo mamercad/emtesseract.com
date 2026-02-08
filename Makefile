@@ -23,12 +23,13 @@ seed: migrate
 	npm run seed
 
 # Install services (requires sudo). Prereqs: deploy-files, migrate, seed
+# Restart ensures services pick up new code on re-deploy.
 install: deploy-files seed
 	sudo cp build/systemd/emtesseract-*.service /etc/systemd/system/
 	sudo systemctl daemon-reload
 	sudo systemctl enable emtesseract-heartbeat emtesseract-worker emtesseract-roundtable emtesseract-api
-	sudo systemctl start emtesseract-heartbeat emtesseract-worker emtesseract-roundtable emtesseract-api
-	@echo "Services enabled and started"
+	sudo systemctl restart emtesseract-heartbeat emtesseract-worker emtesseract-roundtable emtesseract-api
+	@echo "Services enabled and restarted"
 
 # Generate systemd unit files from templates
 deploy-files:

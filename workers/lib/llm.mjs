@@ -12,7 +12,7 @@ const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3.2";
  */
 export async function complete(messages, options = {}) {
   if (!Array.isArray(messages) || messages.length === 0) {
-    throw new Error("messages array required");
+    messages = [{ role: "user", content: "(no messages)" }];
   }
   const normalized = messages.map((m) => ({
     role: m?.role ?? "user",
