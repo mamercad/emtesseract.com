@@ -51,3 +51,10 @@ Default: <http://localhost:8787> (Workers uses 8787; Pages used 8788)
 |------|---------|
 | `wrangler.toml` | Worker name, assets dir, 404 handling |
 | `.assetsignore` | Excluded from upload (node_modules, config files, etc.) |
+
+## CI/CD
+
+GitHub Actions runs `cloudflare-workers.yml` on push to `main`. Required secrets:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`

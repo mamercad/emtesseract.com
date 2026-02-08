@@ -14,7 +14,7 @@ emtesseract.com/
 ├── style.css           # All styles
 ├── logo.png            # Site logo
 ├── 404.html            # Custom 404 (theme-aware)
-├── wrangler.toml       # Cloudflare Pages config
+├── wrangler.toml       # Cloudflare Workers config
 ├── package.json        # npm scripts (deploy, preview)
 ├── DEPLOY.md           # Deployment guide
 ├── assets/
