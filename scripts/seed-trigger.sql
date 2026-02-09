@@ -27,3 +27,23 @@ SELECT
   60,
   true
 WHERE NOT EXISTS (SELECT 1 FROM ops_trigger_rules WHERE name = 'Proactive crawl');
+
+-- Proactive Bluesky post (disabled by default; enable when BLUESKY_HANDLE + BLUESKY_APP_PASSWORD set)
+INSERT INTO ops_trigger_rules (name, trigger_event, action_config, cooldown_minutes, enabled)
+SELECT
+  'Proactive Bluesky post',
+  'proactive_post_bluesky',
+  '{"target_agent": "writer", "steps": [{"kind": "post_bluesky", "payload": {"text": "emTesseract — family game dev. Building cool stuff. 🎮"}}]}'::jsonb,
+  120,
+  false
+WHERE NOT EXISTS (SELECT 1 FROM ops_trigger_rules WHERE name = 'Proactive Bluesky post');
+
+-- Proactive Bluesky scan (read feed + mentions; disabled by default)
+INSERT INTO ops_trigger_rules (name, trigger_event, action_config, cooldown_minutes, enabled)
+SELECT
+  'Proactive Bluesky scan',
+  'proactive_scan_bluesky',
+  '{"target_agent": "observer", "steps": [{"kind": "scan_bluesky", "payload": {"mode": "both"}}]}'::jsonb,
+  60,
+  false
+WHERE NOT EXISTS (SELECT 1 FROM ops_trigger_rules WHERE name = 'Proactive Bluesky scan');

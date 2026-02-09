@@ -48,6 +48,9 @@ const MIME = {
   ".ico": "image/x-icon",
 };
 
+/** CORS headers for LAN probe (emtesseract.com → boomer:8788) */
+const CORS_HEADERS = { "Access-Control-Allow-Origin": "*" };
+
 async function handleApi(pathname, searchParams) {
   if (pathname === "/api/ops_policy") {
     const { rows } = await pool.query(
@@ -223,6 +226,18 @@ async function handleApi(pathname, searchParams) {
        WHERE kind = 'crawl' AND status = 'succeeded' AND created_at >= $1`,
       [today]
     );
+    const { rows: bluesky } = await pool.query(
+      `SELECT status, COUNT(*)::int AS c
+       FROM ops_mission_steps
+       WHERE kind IN ('post_bluesky', 'scan_bluesky')
+       GROUP BY status`,
+      []
+    );
+    const { rows: blueskyToday } = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM ops_mission_steps
+       WHERE kind IN ('post_bluesky', 'scan_bluesky') AND status = 'succeeded' AND created_at >= $1`,
+      [today]
+    );
 
     const toMap = (rows) => Object.fromEntries((rows ?? []).map((r) => [r.status, r.c]));
     return {
@@ -236,6 +251,11 @@ async function handleApi(pathname, searchParams) {
           queued: toMap(crawl).queued ?? 0,
           running: toMap(crawl).running ?? 0,
           today: crawlToday?.[0]?.c ?? 0,
+        },
+        bluesky: {
+          queued: toMap(bluesky).queued ?? 0,
+          running: toMap(bluesky).running ?? 0,
+          today: blueskyToday?.[0]?.c ?? 0,
         },
       },
     };
@@ -440,11 +460,20 @@ async function handlePostProposals(body) {
   }
 }
 
+function withCors(headers) {
+  return { ...CORS_HEADERS, ...headers };
+}
+
 async function handler(req, res) {
   const url = new URL(req.url || "/", `http://${req.headers.host}`);
   const pathname = url.pathname;
 
   if (pathname.startsWith("/api/")) {
+    if (req.method === "OPTIONS") {
+      res.writeHead(204, withCors({ "Access-Control-Allow-Methods": "GET, HEAD, POST, PATCH, OPTIONS" }));
+      res.end();
+      return;
+    }
     const proposalApproveMatch = pathname.match(/^\/api\/proposals\/([0-9a-f-]{36})\/approve$/);
     const proposalRejectMatch = pathname.match(/^\/api\/proposals\/([0-9a-f-]{36})\/reject$/);
 
@@ -452,10 +481,10 @@ async function handler(req, res) {
       try {
         const body = await readJsonBody(req);
         const { status, json } = await handlePostProposals(body);
-        res.writeHead(status, { "Content-Type": "application/json" });
+        res.writeHead(status, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify(json));
       } catch (err) {
-        res.writeHead(400, { "Content-Type": "application/json" });
+        res.writeHead(400, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({ error: err.message || "Bad request" }));
       }
       return;
@@ -465,10 +494,10 @@ async function handler(req, res) {
       try {
         const proposalId = proposalApproveMatch[1];
         const result = await acceptProposal(proposalId);
-        res.writeHead(200, { "Content-Type": "application/json" });
+        res.writeHead(200, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify(result));
       } catch (err) {
-        res.writeHead(400, { "Content-Type": "application/json" });
+        res.writeHead(400, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({ error: err.message || "Approval failed" }));
       }
       return;
@@ -480,10 +509,10 @@ async function handler(req, res) {
         const body = await readJsonBody(req);
         const reason = body?.reason ?? "";
         const result = await rejectProposal(proposalId, reason);
-        res.writeHead(200, { "Content-Type": "application/json" });
+        res.writeHead(200, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify(result));
       } catch (err) {
-        res.writeHead(400, { "Content-Type": "application/json" });
+        res.writeHead(400, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({ error: err.message || "Rejection failed" }));
       }
       return;
@@ -493,10 +522,10 @@ async function handler(req, res) {
       try {
         const body = await readJsonBody(req);
         const { status, json } = await handlePostChat(body, pool);
-        res.writeHead(status, { "Content-Type": "application/json" });
+        res.writeHead(status, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify(json));
       } catch (err) {
-        res.writeHead(500, { "Content-Type": "application/json" });
+        res.writeHead(500, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({ error: err.message || "Chat failed" }));
       }
       return;
@@ -509,7 +538,7 @@ async function handler(req, res) {
         const body = await readJsonBody(req);
         const value = body?.value;
         if (!value || typeof value !== "object") {
-          res.writeHead(400, { "Content-Type": "application/json" });
+          res.writeHead(400, withCors({ "Content-Type": "application/json" }));
           res.end(JSON.stringify({ error: "body.value (object) required" }));
           return;
         }
@@ -523,7 +552,7 @@ async function handler(req, res) {
           "initiative_policy",
         ];
         if (!allowKeys.includes(key)) {
-          res.writeHead(400, { "Content-Type": "application/json" });
+          res.writeHead(400, withCors({ "Content-Type": "application/json" }));
           res.end(JSON.stringify({ error: `Unknown policy key: ${key}` }));
           return;
         }
@@ -540,10 +569,10 @@ async function handler(req, res) {
           "SELECT key, value, updated_at FROM ops_policy WHERE key = $1",
           [key]
         );
-        res.writeHead(200, { "Content-Type": "application/json" });
+        res.writeHead(200, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({ data: rows[0] }));
       } catch (err) {
-        res.writeHead(400, { "Content-Type": "application/json" });
+        res.writeHead(400, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({ error: err.message || "Update failed" }));
       }
       return;
@@ -568,10 +597,10 @@ async function handler(req, res) {
           "SELECT id, title, content, mission_id, step_id, updated_by, created_at, updated_at FROM ops_artifacts WHERE id = $1",
           [id]
         );
-        res.writeHead(200, { "Content-Type": "application/json" });
+        res.writeHead(200, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({ data: rows[0] }));
       } catch (err) {
-        res.writeHead(400, { "Content-Type": "application/json" });
+        res.writeHead(400, withCors({ "Content-Type": "application/json" }));
         res.end(JSON.stringify({ error: err.message || "Update failed" }));
       }
       return;
@@ -579,7 +608,7 @@ async function handler(req, res) {
 
     const json = await handleApi(pathname, url.searchParams);
     if (json) {
-      res.writeHead(200, { "Content-Type": "application/json" });
+      res.writeHead(200, withCors({ "Content-Type": "application/json" }));
       res.end(JSON.stringify(json));
       return;
     }

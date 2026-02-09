@@ -37,6 +37,9 @@
   const $statsCrawlQueued = document.getElementById("stats-crawl-queued");
   const $statsCrawlRunning = document.getElementById("stats-crawl-running");
   const $statsCrawlToday = document.getElementById("stats-crawl-today");
+  const $statsBlueskyQueued = document.getElementById("stats-bluesky-queued");
+  const $statsBlueskyRunning = document.getElementById("stats-bluesky-running");
+  const $statsBlueskyToday = document.getElementById("stats-bluesky-today");
 
   let agentsCache = [];
   let eventKinds = new Set();
@@ -58,12 +61,16 @@
       const { data } = await fetchApi("/api/ops_step_stats");
       const ollama = data?.ollama ?? {};
       const crawl = data?.crawl ?? {};
+      const bluesky = data?.bluesky ?? {};
       $statsOllamaQueued.textContent = ollama.queued ?? "—";
       $statsOllamaRunning.textContent = ollama.running ?? "—";
       $statsOllamaToday.textContent = ollama.today ?? "—";
       $statsCrawlQueued.textContent = crawl.queued ?? "—";
       $statsCrawlRunning.textContent = crawl.running ?? "—";
       $statsCrawlToday.textContent = crawl.today ?? "—";
+      if ($statsBlueskyQueued) $statsBlueskyQueued.textContent = bluesky.queued ?? "—";
+      if ($statsBlueskyRunning) $statsBlueskyRunning.textContent = bluesky.running ?? "—";
+      if ($statsBlueskyToday) $statsBlueskyToday.textContent = bluesky.today ?? "—";
     } catch (err) {
       console.error("Step stats load failed:", err);
     }
@@ -190,7 +197,13 @@
         .map((s) => {
           const draft = s.result?.draft;
           const analysis = s.result?.analysis;
-          const content = draft ?? analysis;
+          const blueskyUri = s.result?.uri;
+          const scanArtifact = s.result?.artifact_id && s.kind === "scan_bluesky";
+          const content =
+            draft ??
+            analysis ??
+            (blueskyUri ? `Posted: ${blueskyUri}` : null) ??
+            (scanArtifact ? "Scanned → artifact" : null);
           const artifactId = s.result?.artifact_id;
           const artifactLink = artifactId
             ? `<a href="/stage/artifacts.html?id=${artifactId}" class="mission-step__artifact-link">View/Edit doc</a>`
@@ -299,7 +312,11 @@
     $giveTaskKind?.addEventListener("change", () => {
       const kind = $giveTaskKind?.value || "analyze";
       if ($giveTaskTopic) {
-        $giveTaskTopic.placeholder = kind === "crawl" ? "URL to fetch (e.g. https://...)" : "Topic or brief";
+        const placeholders = {
+          crawl: "URL to fetch (e.g. https://...)",
+          post_bluesky: "Post text (max 300 chars)",
+        };
+        $giveTaskTopic.placeholder = placeholders[kind] ?? "Topic or brief";
       }
     });
 
@@ -310,12 +327,20 @@
       const kind = $giveTaskKind?.value || "analyze";
       const topic = ($giveTaskTopic?.value || "").trim();
 
-      if (!agentId || !topic) {
-        showGiveTaskFeedback("Agent and topic required", "error");
+      const needsTopic = kind !== "scan_bluesky";
+      if (!agentId || (needsTopic && !topic)) {
+        showGiveTaskFeedback(needsTopic ? "Agent and topic required" : "Agent required", "error");
         return;
       }
 
-      const payload = kind === "crawl" ? { url: topic, topic: topic } : { topic };
+      const payload =
+        kind === "crawl"
+          ? { url: topic, topic: topic }
+          : kind === "post_bluesky"
+            ? { text: topic }
+            : kind === "scan_bluesky"
+              ? { mode: topic || "feed" }
+              : { topic };
       $giveTaskFeedback.hidden = true;
       try {
         const res = await fetch(apiUrl + "/api/proposals", {

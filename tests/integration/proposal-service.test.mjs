@@ -157,4 +157,86 @@ describe("proposal-service integration", { skip: !hasDb }, () => {
 
     await pool.query("DELETE FROM ops_mission_proposals WHERE id = $1", [proposalId]);
   });
+
+  it("creates and auto-approves proposal with post_bluesky step", async () => {
+    const result = await createProposal({
+      agentId: "test-agent",
+      title: "[test] Bluesky post",
+      proposedSteps: [{ kind: "post_bluesky", payload: { text: "Test post from emTesseract ops" } }],
+    });
+
+    assert.strictEqual(result.accepted, true);
+    assert.ok(result.missionId, "missionId should be set");
+  });
+
+  it("rejects post_bluesky when bluesky quota exceeded", async () => {
+    const { rows: policy } = await pool.query(
+      "SELECT value FROM ops_policy WHERE key = 'bluesky_daily_quota'"
+    );
+    const limit = policy?.[0]?.value?.limit ?? 5;
+
+    for (let i = 0; i < limit; i++) {
+      await pool.query(
+        `INSERT INTO ops_bluesky_posts (agent_id, content, posted_at)
+         VALUES ('test-agent', $1, $2)`,
+        [`quota test ${i}`, new Date().toISOString()]
+      );
+    }
+
+    const result = await createProposal({
+      agentId: "test-agent",
+      title: "[test] Bluesky quota exceeded",
+      proposedSteps: [{ kind: "post_bluesky", payload: { text: "Should be rejected" } }],
+    });
+
+    assert.strictEqual(result.accepted, false);
+    assert.ok(result.reason?.toLowerCase().includes("quota") || result.reason?.toLowerCase().includes("bluesky"));
+
+    await pool.query("DELETE FROM ops_bluesky_posts WHERE agent_id = 'test-agent' AND content LIKE 'quota test%'");
+  });
+
+  it("creates and auto-approves proposal with scan_bluesky step", async () => {
+    const result = await createProposal({
+      agentId: "test-agent",
+      title: "[test] Bluesky scan",
+      proposedSteps: [{ kind: "scan_bluesky", payload: { mode: "feed" } }],
+    });
+
+    assert.strictEqual(result.accepted, true);
+    assert.ok(result.missionId, "missionId should be set");
+  });
+
+  it("rejects scan_bluesky when scan quota exceeded", async () => {
+    const { rows: policy } = await pool.query(
+      "SELECT value FROM ops_policy WHERE key = 'scan_bluesky_policy'"
+    );
+    const limit = policy?.[0]?.value?.max_scans_per_day ?? 10;
+
+    const { rows: missions } = await pool.query(
+      `INSERT INTO ops_missions (title, status, created_by)
+       VALUES ('_scan_quota_test', 'succeeded', 'test-agent')
+       RETURNING id`
+    );
+    const missionId = missions[0].id;
+
+    for (let i = 0; i < limit; i++) {
+      await pool.query(
+        `INSERT INTO ops_mission_steps (mission_id, kind, status)
+         VALUES ($1, 'scan_bluesky', 'succeeded')`,
+        [missionId]
+      );
+    }
+
+    const result = await createProposal({
+      agentId: "test-agent",
+      title: "[test] Scan quota exceeded",
+      proposedSteps: [{ kind: "scan_bluesky", payload: { mode: "mentions" } }],
+    });
+
+    assert.strictEqual(result.accepted, false);
+    assert.ok(result.reason?.toLowerCase().includes("quota") || result.reason?.toLowerCase().includes("scan"));
+
+    await pool.query("DELETE FROM ops_mission_steps WHERE mission_id = $1", [missionId]);
+    await pool.query("DELETE FROM ops_missions WHERE id = $1", [missionId]);
+  });
 });

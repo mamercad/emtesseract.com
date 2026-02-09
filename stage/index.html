@@ -35,6 +35,11 @@
           <span class="stage-stats__nums"><span id="stats-crawl-queued">—</span><span
               id="stats-crawl-running">—</span><span id="stats-crawl-today">—</span></span>
         </span>
+        <span class="stage-stats__group" title="Bluesky: queued · running · today">
+          <span class="stage-stats__label">Bluesky</span>
+          <span class="stage-stats__nums"><span id="stats-bluesky-queued">—</span><span
+              id="stats-bluesky-running">—</span><span id="stats-bluesky-today">—</span></span>
+        </span>
       </div>
       <nav class="stage-nav">
         <a href="/stage/artifacts.html">Artifacts</a>
@@ -93,8 +98,10 @@
             <option value="analyze">Analyze</option>
             <option value="write_content">Write content</option>
             <option value="crawl">Crawl URL</option>
+            <option value="post_bluesky">Post to Bluesky</option>
+            <option value="scan_bluesky">Scan Bluesky (read)</option>
           </select>
-          <input type="text" id="give-task-topic" placeholder="Topic or brief" required aria-label="Topic">
+          <input type="text" id="give-task-topic" placeholder="Topic or brief" aria-label="Topic">
           <button type="submit" class="give-task-submit">Submit</button>
         </form>
         <div class="give-task-feedback" id="give-task-feedback" hidden></div>
@@ -109,7 +116,8 @@
     <div class="stage-setup__card">
       <h2>Configure Stage</h2>
       <p>Edit <code>stage/config.js</code> and set <code>apiUrl</code> to your Stage API server (e.g.
-        <code>http://localhost:8788</code>).</p>
+        <code>http://localhost:8788</code>).
+      </p>
       <p>Run the API server on Boomer: <code>node api/server.mjs</code></p>
     </div>
   </div>

@@ -65,6 +65,31 @@ const STEP_KIND_GATES = {
     }
     return { ok: true };
   },
+
+  post_bluesky: async () => {
+    const quota = await getPolicy("bluesky_daily_quota");
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const { rows, error } = await query(
+      "SELECT COUNT(*)::int FROM ops_bluesky_posts WHERE posted_at >= $1",
+      [startOfDay.toISOString()]
+    );
+    const posted = error ? 0 : rows?.[0]?.count ?? 0;
+    if (posted >= (quota.limit ?? 5)) {
+      return { ok: false, reason: `Bluesky quota full (${posted}/${quota.limit})` };
+    }
+    return { ok: true };
+  },
+
+  scan_bluesky: async () => {
+    const policy = await getPolicy("scan_bluesky_policy");
+    if (!policy?.enabled) return { ok: true };
+    const scanned = await countTodayByKind("scan_bluesky");
+    if (scanned >= (policy.max_scans_per_day ?? 10)) {
+      return { ok: false, reason: `Bluesky scan quota full (${scanned}/${policy.max_scans_per_day})` };
+    }
+    return { ok: true };
+  },
 };
 
 async function checkGates(proposedSteps) {

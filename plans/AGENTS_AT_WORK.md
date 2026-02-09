@@ -11,7 +11,7 @@
 | Content worker | ✅ Done | write_content via Ollama |
 | Crawl worker | ✅ Done | Fetch URL, extract text, store in ops_artifacts |
 | Roundtable worker | ✅ Done | Watercooler/standup/debate, memory distillation |
-| Domain workers | ⏳ Pending | x-autopost only |
+| Domain workers | ✅ Done | Bluesky (post_bluesky); X/Twitter skipped |
 
 **MVP:** Ollama on Boomer + step worker + seed + roundtable + memory. See `SETUP.md`, `docs/SEED_TRIGGERS.md`, `docs/STAGE_UI.md`, `docs/ROUNDTABLE_AND_MEMORY.md`.
 

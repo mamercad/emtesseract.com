@@ -35,4 +35,20 @@ describe("db integration", { skip: !hasDb }, () => {
     );
     assert.ok(Array.isArray(rows));
   });
+
+  it("ops_bluesky_posts table exists (migration 020)", async () => {
+    const { rows } = await pool.query(
+      "SELECT 1 FROM ops_bluesky_posts LIMIT 1"
+    );
+    assert.ok(Array.isArray(rows));
+  });
+
+  it("bluesky_daily_quota and scan_bluesky_policy exist", async () => {
+    const { rows } = await pool.query(
+      "SELECT key, value FROM ops_policy WHERE key IN ('bluesky_daily_quota', 'scan_bluesky_policy')"
+    );
+    const keys = (rows || []).map((r) => r.key);
+    assert.ok(keys.includes("bluesky_daily_quota"), "bluesky_daily_quota policy");
+    assert.ok(keys.includes("scan_bluesky_policy"), "scan_bluesky_policy");
+  });
 });

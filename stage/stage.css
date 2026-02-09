@@ -137,7 +137,6 @@
 
 /* Mobile responsive (640px and below) */
 @media (max-width: 640px) {
-
   /* Header — tighter padding, nav wraps */
   .stage-header {
     padding: var(--space-md) var(--space-md);
