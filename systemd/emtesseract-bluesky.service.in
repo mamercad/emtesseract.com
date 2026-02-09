@@ -1,0 +1,15 @@
+[Unit]
+Description=emTesseract Bluesky worker
+After=network.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@PROJECT_ROOT@
+EnvironmentFile=@PROJECT_ROOT@/.env
+ExecStart=/usr/bin/env node workers/bluesky-worker.mjs
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

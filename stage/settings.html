@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="emTesseract Ops — Settings">
+  <title>Settings — emTesseract Ops</title>
+  <link rel="icon" type="image/png" href="/logo.png?v=2" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/stage/stage.css">
+  <script>
+    (function () {
+      var t = localStorage.getItem("emtesseract-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+
+<body class="stage-page stage-page--settings">
+  <header class="stage-header">
+    <div class="stage-header__inner">
+      <a href="/" class="stage-logo">
+        <img src="/logo.png" alt="emTesseract" width="32" height="32">
+        <span>Settings</span>
+      </a>
+      <nav class="stage-nav">
+        <a href="/stage/">Stage</a>
+        <a href="/stage/artifacts.html">Artifacts</a>
+        <a href="/stage/chat.html">Chat</a>
+        <a href="/stage/roundtables.html">Roundtables</a>
+        <a href="/stage/swimlane.html">Swimlane</a>
+        <a href="/">← Home</a>
+        <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
+          <span class="theme-toggle__icon">🌙</span>
+          <span class="theme-toggle__label">Dark</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="settings-main">
+    <h1 class="settings-title">Policy Settings</h1>
+    <p class="settings-desc">Configure quotas and feature flags. Changes apply immediately.</p>
+
+    <div class="settings-loading" id="settings-loading">Loading…</div>
+    <div class="settings-error" id="settings-error" hidden></div>
+    <div class="settings-panels" id="settings-panels" hidden></div>
+  </main>
+
+  <script src="/stage/config.js"></script>
+  <script src="/stage/shared.js"></script>
+  <script src="/stage/settings.js"></script>
+  <script>
+    (function () {
+      const storageKey = "emtesseract-theme";
+      const getPreferred = () =>
+        localStorage.getItem(storageKey) ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const setTheme = (theme) => {
+        document.documentElement.setAttribute("data-theme", theme);
+        const btn = document.querySelector(".theme-toggle");
+        if (btn) {
+          btn.querySelector(".theme-toggle__icon").textContent = theme === "dark" ? "☀️" : "🌙";
+          btn.querySelector(".theme-toggle__label").textContent = theme === "dark" ? "Light" : "Dark";
+        }
+        localStorage.setItem(storageKey, theme);
+      };
+      setTheme(getPreferred());
+      document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+        setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+
+</html>

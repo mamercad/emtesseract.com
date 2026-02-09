@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="emTesseract - Family Game Development Company. Crafting immersive digital experiences through code.">
+  <meta name="description"
+    content="emTesseract - Family Game Development Company. Crafting immersive digital experiences through code.">
   <title>emTesseract — Crafting immersive digital experiences through code</title>
   <link rel="icon" type="image/png" href="logo.png?v=2" sizes="any">
   <link rel="apple-touch-icon" href="logo.png?v=2">
   <link rel="stylesheet" href="style.css">
   <script>
-    (function(){
-      var t=localStorage.getItem("emtesseract-theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
-      document.documentElement.setAttribute("data-theme",t);
+    (function () {
+      var t = localStorage.getItem("emtesseract-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
     })();
   </script>
 </head>
+
 <body>
   <header class="site-header">
     <div class="site-header__inner">
@@ -27,6 +30,7 @@
           <li><a href="#games">Games</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
+          <li class="nav-links__ops" hidden><a href="/stage/">Stage</a></li>
           <li>
             <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
               <span class="theme-toggle__icon">🌙</span>
@@ -52,13 +56,15 @@
     <section id="about" class="vision-section">
       <div class="section__header">
         <h2 class="section__title">About the Vision</h2>
-        <p class="section__subtitle">Building innovative game experiences with modern technology and creative storytelling</p>
+        <p class="section__subtitle">Building innovative game experiences with modern technology and creative
+          storytelling</p>
       </div>
       <div class="vision">
         <article class="vision__card">
           <span class="vision__icon" aria-hidden="true">🎮</span>
           <h3>Game Development</h3>
-          <p>Creating engaging gameplay mechanics and immersive worlds using cutting-edge technologies and frameworks.</p>
+          <p>Creating engaging gameplay mechanics and immersive worlds using cutting-edge technologies and frameworks.
+          </p>
         </article>
         <article class="vision__card">
           <span class="vision__icon" aria-hidden="true">🎨</span>
@@ -91,7 +97,8 @@
               </div>
             </div>
           </div>
-          <p class="game-card__desc">Help Santa deliver presents! Bounce gifts into chimneys using your paddle. Move with mouse or touch controls. Don't miss more than 5 presents!</p>
+          <p class="game-card__desc">Help Santa deliver presents! Bounce gifts into chimneys using your paddle. Move
+            with mouse or touch controls. Don't miss more than 5 presents!</p>
           <div class="game-card__footer">
             <a href="https://emtesseract.com/santa-bounce" class="game-card__link">Play Now</a>
           </div>
@@ -109,7 +116,8 @@
               </div>
             </div>
           </div>
-          <p class="game-card__desc">Fast-paced trivia game that challenges your knowledge across multiple categories. Test yourself with 10 questions and compete for high scores!</p>
+          <p class="game-card__desc">Fast-paced trivia game that challenges your knowledge across multiple categories.
+            Test yourself with 10 questions and compete for high scores!</p>
           <div class="game-card__footer">
             <a href="https://mamercad.github.io/BrainFreeze" class="game-card__link">Play Now</a>
           </div>
@@ -127,7 +135,8 @@
               </div>
             </div>
           </div>
-          <p class="game-card__desc">Browser-based roguelike dungeon crawler with kawaii chibi aesthetics and top-down gameplay. Adventure through procedurally generated dungeons!</p>
+          <p class="game-card__desc">Browser-based roguelike dungeon crawler with kawaii chibi aesthetics and top-down
+            gameplay. Adventure through procedurally generated dungeons!</p>
           <div class="game-card__footer">
             <a href="https://mamercad.github.io/DungeonCuties" class="game-card__link">Play Now</a>
           </div>
@@ -145,7 +154,8 @@
               </div>
             </div>
           </div>
-          <p class="game-card__desc">Manage your own ghost hunting agency and catch spooky spirits in this Roblox experience. Build your team and tackle supernatural cases!</p>
+          <p class="game-card__desc">Manage your own ghost hunting agency and catch spooky spirits in this Roblox
+            experience. Build your team and tackle supernatural cases!</p>
           <div class="game-card__footer">
             <span class="game-card__link">In Development</span>
           </div>
@@ -160,7 +170,8 @@
       </div>
       <div class="contact__links">
         <a href="mailto:info@emtesseract.com" class="contact__link">📧 Email</a>
-        <a href="https://github.com/mamercad" class="contact__link" rel="noopener noreferrer" target="_blank">🐙 GitHub</a>
+        <a href="https://github.com/mamercad" class="contact__link" rel="noopener noreferrer" target="_blank">🐙
+          GitHub</a>
       </div>
     </section>
   </main>
@@ -189,5 +200,20 @@
       });
     })();
   </script>
+  <script>
+    (function () {
+      var el = document.querySelector(".nav-links__ops");
+      if (!el) return;
+      var isSameOrigin = /^(boomer|localhost|127\.0\.0\.1)(:\d+)?$/.test(window.location.host);
+      var probeUrl = isSameOrigin ? "/api/ops_agents" : "http://boomer:8788/api/ops_agents";
+      var stageHref = isSameOrigin ? "/stage/" : "http://boomer:8788/stage/";
+      var link = el.querySelector("a");
+      if (link) link.href = stageHref;
+      fetch(probeUrl, { method: "HEAD", mode: "cors" })
+        .then(function (r) { if (r.ok) el.removeAttribute("hidden"); })
+        .catch(function () {});
+    })();
+  </script>
 </body>
+
 </html>

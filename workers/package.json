@@ -1,0 +1,16 @@
+{
+  "name": "emtesseract-workers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "heartbeat": "node heartbeat.mjs",
+    "worker": "node step-worker.mjs",
+    "content": "node content-worker.mjs",
+    "crawl": "node crawl-worker.mjs",
+    "roundtable": "node roundtable-worker.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39",
+    "pg": "^8"
+  }
+}

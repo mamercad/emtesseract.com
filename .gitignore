@@ -1,1 +1,14 @@
 node_modules/
+.env
+build/
+
+# Experimental / alternate implementations (not deployed)
+nextjs/
+vue/
+index-cartoon.html
+style-cartoon.css
+REDO.md
+
+# Asset variants (main site uses logo.png; these are for nextjs/vue)
+assets/emtesseract-*.png*
+assets/favicons/

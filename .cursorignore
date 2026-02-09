@@ -1,0 +1,4 @@
+# static site
+node_modules/
+.git/
+*.lock

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="emTesseract Ops — Shared artifacts">
+  <title>Artifacts — emTesseract Ops</title>
+  <link rel="icon" type="image/png" href="/logo.png?v=2" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/stage/stage.css">
+  <script>
+    (function () {
+      var t = localStorage.getItem("emtesseract-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+
+<body class="stage-page stage-page--artifacts">
+  <header class="stage-header">
+    <div class="stage-header__inner">
+      <a href="/" class="stage-logo">
+        <img src="/logo.png" alt="emTesseract" width="32" height="32">
+        <span>Artifacts</span>
+      </a>
+      <nav class="stage-nav">
+        <a href="/stage/">Stage</a>
+        <a href="/stage/settings.html">Settings</a>
+        <a href="/stage/chat.html">Chat</a>
+        <a href="/stage/roundtables.html">Roundtables</a>
+        <a href="/stage/swimlane.html">Swimlane</a>
+        <a href="/">← Home</a>
+        <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
+          <span class="theme-toggle__icon">🌙</span>
+          <span class="theme-toggle__label">Dark</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="artifacts-main">
+    <aside class="artifacts-sidebar">
+      <h2 class="stage-section__title">Documents</h2>
+      <div class="artifacts-list" id="artifacts-list">
+        <div class="artifacts-empty" id="artifacts-empty">No artifacts yet.</div>
+      </div>
+    </aside>
+    <section class="artifacts-editor">
+      <div class="artifacts-editor__empty" id="artifacts-editor-empty">
+        Select an artifact or create a mission with write_content to get started.
+      </div>
+      <div class="artifacts-editor__panel" id="artifacts-editor-panel" hidden>
+        <div class="artifacts-editor__header">
+          <h2 class="artifacts-editor__title" id="artifacts-editor-title"></h2>
+          <span class="artifacts-editor__meta" id="artifacts-editor-meta"></span>
+        </div>
+        <textarea class="artifacts-editor__textarea" id="artifacts-editor-textarea" placeholder="Markdown content..."></textarea>
+        <div class="artifacts-editor__actions">
+          <button type="button" class="artifacts-editor__save" id="artifacts-editor-save">Save</button>
+          <span class="artifacts-editor__status" id="artifacts-editor-status"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/stage/config.js"></script>
+  <script src="/stage/shared.js"></script>
+  <script src="/stage/artifacts.js"></script>
+  <script>
+    (function () {
+      const storageKey = "emtesseract-theme";
+      const getPreferred = () =>
+        localStorage.getItem(storageKey) ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const setTheme = (theme) => {
+        document.documentElement.setAttribute("data-theme", theme);
+        const btn = document.querySelector(".theme-toggle");
+        if (btn) {
+          btn.querySelector(".theme-toggle__icon").textContent = theme === "dark" ? "☀️" : "🌙";
+          btn.querySelector(".theme-toggle__label").textContent = theme === "dark" ? "Light" : "Dark";
+        }
+        localStorage.setItem(storageKey, theme);
+      };
+      setTheme(getPreferred());
+      document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+        setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+
+</html>

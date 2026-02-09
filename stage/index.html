@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="emTesseract Ops — Agent activity dashboard">
+  <title>Stage — emTesseract Ops</title>
+  <link rel="icon" type="image/png" href="/logo.png?v=2" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/stage/stage.css">
+  <script>
+    (function () {
+      var t = localStorage.getItem("emtesseract-theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+
+<body class="stage-page">
+  <header class="stage-header">
+    <div class="stage-header__inner">
+      <a href="/" class="stage-logo">
+        <img src="/logo.png" alt="emTesseract" width="32" height="32">
+        <span>Stage</span>
+      </a>
+      <div class="stage-stats" id="stage-stats" aria-label="Task queue stats">
+        <span class="stage-stats__group" title="Ollama: queued · running · today">
+          <span class="stage-stats__label">Ollama</span>
+          <span class="stage-stats__nums"><span id="stats-ollama-queued">—</span><span
+              id="stats-ollama-running">—</span><span id="stats-ollama-today">—</span></span>
+        </span>
+        <span class="stage-stats__group" title="Crawl: queued · running · today">
+          <span class="stage-stats__label">Crawl</span>
+          <span class="stage-stats__nums"><span id="stats-crawl-queued">—</span><span
+              id="stats-crawl-running">—</span><span id="stats-crawl-today">—</span></span>
+        </span>
+        <span class="stage-stats__group" title="Bluesky: queued · running · today">
+          <span class="stage-stats__label">Bluesky</span>
+          <span class="stage-stats__nums"><span id="stats-bluesky-queued">—</span><span
+              id="stats-bluesky-running">—</span><span id="stats-bluesky-today">—</span></span>
+        </span>
+      </div>
+      <nav class="stage-nav">
+        <a href="/stage/artifacts.html">Artifacts</a>
+        <a href="/stage/settings.html">Settings</a>
+        <a href="/stage/chat.html">Chat</a>
+        <a href="/stage/roundtables.html">Roundtables</a>
+        <a href="/stage/swimlane.html">Swimlane</a>
+        <a href="/">← Home</a>
+        <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
+          <span class="theme-toggle__icon">🌙</span>
+          <span class="theme-toggle__label">Dark</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="stage-main">
+    <aside class="stage-sidebar">
+      <section class="stage-agents">
+        <h2 class="stage-section__title">Agents</h2>
+        <div class="agents-grid" id="agents-grid">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+    </aside>
+
+    <section class="stage-feed">
+      <div class="stage-feed__header">
+        <h2 class="stage-section__title">Signal Feed</h2>
+        <div class="stage-filters">
+          <select id="filter-agent" aria-label="Filter by agent">
+            <option value="">All agents</option>
+          </select>
+          <select id="filter-kind" aria-label="Filter by kind">
+            <option value="">All kinds</option>
+          </select>
+        </div>
+      </div>
+      <div class="feed-list" id="feed-list" role="list">
+        <div class="feed-empty" id="feed-empty">No events yet.</div>
+      </div>
+    </section>
+
+    <section class="stage-missions">
+      <div class="stage-missions__header">
+        <h2 class="stage-section__title">Missions</h2>
+        <button type="button" class="give-task-toggle" id="give-task-toggle" aria-expanded="false">Give task</button>
+      </div>
+      <div class="give-task-form" id="give-task-form" hidden>
+        <form id="give-task-form-inner">
+          <select id="give-task-agent" required aria-label="Agent">
+            <option value="">Select agent</option>
+          </select>
+          <input type="text" id="give-task-title" placeholder="Task title" aria-label="Task title">
+          <select id="give-task-kind" aria-label="Step kind">
+            <option value="analyze">Analyze</option>
+            <option value="write_content">Write content</option>
+            <option value="crawl">Crawl URL</option>
+            <option value="post_bluesky">Post to Bluesky</option>
+            <option value="scan_bluesky">Scan Bluesky (read)</option>
+          </select>
+          <input type="text" id="give-task-topic" placeholder="Topic or brief" aria-label="Topic">
+          <button type="submit" class="give-task-submit">Submit</button>
+        </form>
+        <div class="give-task-feedback" id="give-task-feedback" hidden></div>
+      </div>
+      <div class="missions-list" id="missions-list" role="list">
+        <div class="missions-empty" id="missions-empty">No missions yet.</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="stage-setup" id="stage-setup" hidden>
+    <div class="stage-setup__card">
+      <h2>Configure Stage</h2>
+      <p>Edit <code>stage/config.js</code> and set <code>apiUrl</code> to your Stage API server (e.g.
+        <code>http://localhost:8788</code>).
+      </p>
+      <p>Run the API server on Boomer: <code>node api/server.mjs</code></p>
+    </div>
+  </div>
+
+  <script src="/stage/config.js"></script>
+  <script src="/stage/shared.js"></script>
+  <script src="/stage/app.js"></script>
+  <script>
+    (function () {
+      const storageKey = "emtesseract-theme";
+      const getPreferred = () =>
+        localStorage.getItem(storageKey) ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const setTheme = (theme) => {
+        document.documentElement.setAttribute("data-theme", theme);
+        const btn = document.querySelector(".theme-toggle");
+        if (btn) {
+          btn.querySelector(".theme-toggle__icon").textContent = theme === "dark" ? "☀️" : "🌙";
+          btn.querySelector(".theme-toggle__label").textContent = theme === "dark" ? "Light" : "Dark";
+        }
+        localStorage.setItem(storageKey, theme);
+      };
+      setTheme(getPreferred());
+      document.querySelector(".theme-toggle")?.addEventListener("click", () => {
+        setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+
+</html>
