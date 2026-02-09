@@ -27,8 +27,8 @@ seed: migrate
 install: deploy-files seed
 	sudo cp build/systemd/emtesseract-*.service /etc/systemd/system/
 	sudo systemctl daemon-reload
-	sudo systemctl enable emtesseract-heartbeat emtesseract-worker emtesseract-roundtable emtesseract-api
-	sudo systemctl restart emtesseract-heartbeat emtesseract-worker emtesseract-roundtable emtesseract-api
+	sudo systemctl enable emtesseract-heartbeat emtesseract-worker emtesseract-content emtesseract-crawl emtesseract-roundtable emtesseract-api
+	sudo systemctl restart emtesseract-heartbeat emtesseract-worker emtesseract-content emtesseract-crawl emtesseract-roundtable emtesseract-api
 	@echo "Services enabled and restarted"
 
 # Generate systemd unit files from templates
@@ -42,14 +42,18 @@ deploy-files:
 		systemd/emtesseract-roundtable.service.in > build/systemd/emtesseract-roundtable.service
 	sed 's|@PROJECT_ROOT@|$(PROJECT_ROOT)|g;s|@USER@|$(USER)|g' \
 		systemd/emtesseract-api.service.in > build/systemd/emtesseract-api.service
+	sed 's|@PROJECT_ROOT@|$(PROJECT_ROOT)|g;s|@USER@|$(USER)|g' \
+		systemd/emtesseract-content.service.in > build/systemd/emtesseract-content.service
+	sed 's|@PROJECT_ROOT@|$(PROJECT_ROOT)|g;s|@USER@|$(USER)|g' \
+		systemd/emtesseract-crawl.service.in > build/systemd/emtesseract-crawl.service
 	@echo "Generated build/systemd/*.service"
 
 # Show service status
 status:
-	@systemctl is-active emtesseract-heartbeat emtesseract-worker emtesseract-roundtable emtesseract-api 2>/dev/null || true
-	@sudo systemctl status emtesseract-heartbeat emtesseract-worker emtesseract-roundtable emtesseract-api --no-pager 2>/dev/null || true
+	@systemctl is-active emtesseract-heartbeat emtesseract-worker emtesseract-content emtesseract-crawl emtesseract-roundtable emtesseract-api 2>/dev/null || true
+	@sudo systemctl status emtesseract-heartbeat emtesseract-worker emtesseract-content emtesseract-crawl emtesseract-roundtable emtesseract-api --no-pager 2>/dev/null || true
 
 # Stop services
 stop:
-	sudo systemctl stop emtesseract-heartbeat emtesseract-worker emtesseract-roundtable emtesseract-api
+	sudo systemctl stop emtesseract-heartbeat emtesseract-worker emtesseract-content emtesseract-crawl emtesseract-roundtable emtesseract-api
 	@echo "Services stopped"

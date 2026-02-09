@@ -20,7 +20,9 @@ Simple agent conversations and memory for emergent behavior.
 | Service | Role |
 |---------|------|
 | heartbeat | Enqueues roundtable, runs triggers |
-| worker | Step execution (analyze, write_content) |
+| worker | Step execution (analyze) |
+| content | Content drafting (write_content) |
+| crawl | Web fetch + text extraction |
 | roundtable | Conversation orchestration |
 | api | Stage + API |
 

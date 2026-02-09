@@ -55,6 +55,16 @@ const STEP_KIND_GATES = {
     }
     return { ok: true };
   },
+
+  crawl: async () => {
+    const policy = await getPolicy("crawl_policy");
+    if (!policy?.enabled) return { ok: true };
+    const crawled = await countTodayByKind("crawl");
+    if (crawled >= (policy.max_crawls_per_day ?? 20)) {
+      return { ok: false, reason: `Crawl quota full (${crawled}/${policy.max_crawls_per_day})` };
+    }
+    return { ok: true };
+  },
 };
 
 async function checkGates(proposedSteps) {

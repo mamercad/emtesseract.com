@@ -18,3 +18,12 @@ SELECT
   10,
   true
 WHERE NOT EXISTS (SELECT 1 FROM ops_trigger_rules WHERE name = 'Proactive content draft');
+
+INSERT INTO ops_trigger_rules (name, trigger_event, action_config, cooldown_minutes, enabled)
+SELECT
+  'Proactive crawl',
+  'proactive_crawl',
+  '{"target_agent": "observer", "steps": [{"kind": "crawl", "payload": {"url": "https://www.gamedeveloper.com/", "topic": "game dev news"}}]}'::jsonb,
+  60,
+  true
+WHERE NOT EXISTS (SELECT 1 FROM ops_trigger_rules WHERE name = 'Proactive crawl');

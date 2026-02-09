@@ -270,6 +270,13 @@
       if (!isOpen) $giveTaskFeedback.hidden = true;
     });
 
+    $giveTaskKind?.addEventListener("change", () => {
+      const kind = $giveTaskKind?.value || "analyze";
+      if ($giveTaskTopic) {
+        $giveTaskTopic.placeholder = kind === "crawl" ? "URL to fetch (e.g. https://...)" : "Topic or brief";
+      }
+    });
+
     $giveTaskFormInner?.addEventListener("submit", async (e) => {
       e.preventDefault();
       const agentId = $giveTaskAgent?.value;
@@ -282,6 +289,7 @@
         return;
       }
 
+      const payload = kind === "crawl" ? { url: topic, topic: topic } : { topic };
       $giveTaskFeedback.hidden = true;
       try {
         const res = await fetch(apiUrl + "/api/proposals", {
@@ -290,7 +298,7 @@
           body: JSON.stringify({
             agent_id: agentId,
             title,
-            steps: [{ kind, payload: { topic } }],
+            steps: [{ kind, payload }],
           }),
         });
         const text = await res.text();

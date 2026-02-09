@@ -7,9 +7,11 @@
 | Heartbeat | ✅ Done | Triggers, reactions, recovery |
 | Seed scripts | ✅ Done | `make deploy` runs seed; bootstrap observer trigger |
 | Stage frontend | ✅ Done | Feed, missions, swimlane, Give task, task IDs, flicker-free refresh |
-| Step worker | ✅ Done | Ollama-based, analyze + write_content |
+| Step worker | ✅ Done | Ollama-based, analyze only |
+| Content worker | ✅ Done | write_content via Ollama |
+| Crawl worker | ✅ Done | Fetch URL, extract text, store in ops_artifacts |
 | Roundtable worker | ✅ Done | Watercooler/standup/debate, memory distillation |
-| Domain workers | ⏳ Pending | x-autopost, content, crawl |
+| Domain workers | ⏳ Pending | x-autopost only |
 
 **MVP:** Ollama on Boomer + step worker + seed + roundtable + memory. See `SETUP.md`, `docs/SEED_TRIGGERS.md`, `docs/STAGE_UI.md`, `docs/ROUNDTABLE_AND_MEMORY.md`.
 

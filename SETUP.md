@@ -89,7 +89,9 @@ With Supabase, Stage uses the Supabase client. You would need to restore the Sup
 | Seed | `npm run seed` (agents + trigger rules; see [docs/SEED_TRIGGERS.md](docs/SEED_TRIGGERS.md)) |
 | Ollama | On Boomer: `ollama serve`, `ollama pull <model>` |
 | Heartbeat | `cd workers && npm run heartbeat` |
-| Step worker | `cd workers && npm run worker` (on Boomer) |
+| Step worker | `cd workers && npm run worker` (analyze) |
+| Content worker | `cd workers && npm run content` (write_content) |
+| Crawl worker | `cd workers && npm run crawl` |
 | Roundtable worker | `cd workers && npm run roundtable` (on Boomer) |
 | Stage API | `npm run api` → http://localhost:8788/stage/ |
 
