@@ -77,6 +77,8 @@ The API server serves both static files and the `/api/ops_*` endpoints. Open:
 
 To access from another machine, set `apiUrl` in `stage/config.js` to `http://boomer:8788` (or Boomer's IP).
 
+**Stage link on main site (emtesseract.com):** When visiting emtesseract.com from the LAN, the Stage link in the nav appears only if Boomer's API is reachable. The page probes `http://boomer:8788/api/ops_agents`; on success, the link is shown. Ensure `boomer` resolves (DNS or `/etc/hosts`) on client machines. See [STAGE_UI.md](STAGE_UI.md).
+
 ## Ports
 
 | Service   | Port  |

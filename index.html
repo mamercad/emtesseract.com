@@ -30,7 +30,7 @@
           <li><a href="#games">Games</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
-          <li><a href="/stage/">Stage</a></li>
+          <li class="nav-links__ops" hidden><a href="/stage/">Stage</a></li>
           <li>
             <button type="button" class="theme-toggle" aria-label="Toggle light/dark mode">
               <span class="theme-toggle__icon">🌙</span>
@@ -198,6 +198,20 @@
       document.querySelector(".theme-toggle")?.addEventListener("click", () => {
         setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
       });
+    })();
+  </script>
+  <script>
+    (function () {
+      var el = document.querySelector(".nav-links__ops");
+      if (!el) return;
+      var isSameOrigin = /^(boomer|localhost|127\.0\.0\.1)(:\d+)?$/.test(window.location.host);
+      var probeUrl = isSameOrigin ? "/api/ops_agents" : "http://boomer:8788/api/ops_agents";
+      var stageHref = isSameOrigin ? "/stage/" : "http://boomer:8788/stage/";
+      var link = el.querySelector("a");
+      if (link) link.href = stageHref;
+      fetch(probeUrl, { method: "HEAD", mode: "cors" })
+        .then(function (r) { if (r.ok) el.removeAttribute("hidden"); })
+        .catch(function () {});
     })();
   </script>
 </body>

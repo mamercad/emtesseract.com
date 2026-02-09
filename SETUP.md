@@ -78,6 +78,8 @@ Run in Supabase SQL Editor or `psql "$DATABASE_URL" -c "..."`.
 
 With Supabase, Stage uses the Supabase client. You would need to restore the Supabase-specific Stage code and config. **Local hosting uses the API server instead**—see docs/LOCAL_POSTGRES.md.
 
+**Stage link on main site (emtesseract.com):** When visiting emtesseract.com from the LAN, the Stage link appears in the nav only if Boomer's API is reachable. The page probes `http://boomer:8788/api/ops_agents`; on success, the link is shown. Ensure `boomer` resolves (DNS or `/etc/hosts`) on client machines. See [docs/STAGE_UI.md](docs/STAGE_UI.md).
+
 ---
 
 ## Quick checklist (local)
@@ -106,6 +108,7 @@ With Supabase, Stage uses the Supabase client. You would need to restore the Sup
 - **Heartbeat fails:** Check `.env` is loaded (workers read from project root).
 - **No proposals:** Run `npm run seed` to ensure `ops_trigger_rules` has the bootstrap observer trigger.
 - **Stage empty:** Ensure API server is running; set `apiUrl` in `stage/config.js`. See [docs/STAGE_UI.md](docs/STAGE_UI.md).
+- **Stage link not showing on emtesseract.com:** You must be on the LAN; `boomer` must resolve (DNS or `/etc/hosts`); Boomer API must be running. The probe fetches `http://boomer:8788/api/ops_agents`.
 - **Chat 404:** Chat requires the API server (same as Stage). See [docs/CHAT.md](docs/CHAT.md).
 - **Steps never run:** Step worker must be running; Ollama must be reachable at `OLLAMA_BASE_URL`.
 - **Ollama connection refused:** Ensure `ollama serve` on Boomer; if worker is remote, use `http://boomer:11434` or Boomer's IP.

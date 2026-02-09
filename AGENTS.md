@@ -77,7 +77,7 @@ Do not deploy (Cloudflare/Boomer) unless explicitly asked. "Ship it" means prepa
 
 ## Ops Link Visibility (LAN probe)
 
-The Stage link in the main nav is hidden by default and shown only when the Ops API is reachable (i.e., when the user is on the LAN and Boomer is available). A client-side probe fetches `/api/ops_agents` (same-origin when on Boomer, or `http://boomer:8788/api/ops_agents` when on emtesseract.com). On success, the link is revealed. The API server sends CORS headers to allow the cross-origin probe from emtesseract.com. See `docs/STAGE_UI.md` for setup.
+The Stage link in the main nav is hidden by default and shown only when the Ops API is reachable (i.e., when the user is on the LAN and Boomer is available). A client-side probe fetches `/api/ops_agents` (same-origin when on Boomer, or `http://boomer:8788/api/ops_agents` when on emtesseract.com). On success, the link is revealed. The API server sends CORS headers to allow the cross-origin probe from emtesseract.com. No login required when on the LAN. See `docs/STAGE_UI.md` for setup.
 
 ## Conventions
 
