@@ -53,6 +53,12 @@ npm run test:all          # Full suite + integration
 **Unit tests** (no DB): `tests/unit/*.test.mjs` — pure logic for utils, llm, format-config.
 **Integration tests** (need Postgres): `tests/integration/*.test.mjs` — proposal-service, db. Skip when `DATABASE_URL` unset.
 
+**AI agents verifying Stage API:** Use **terminal commands** (`curl`), not web fetch. Web fetch runs from an isolated server that cannot reach private hosts (localhost, `boomer`, etc.). Terminal commands run in the user's environment, so `curl` can reach `boomer`:
+
+```bash
+curl -s http://boomer:8788/api/ops_agents | jq '.data[] | {id, display_name}'
+```
+
 ## Conventions
 
 - **CSS:** Variables in `:root` and `assets/css/variables.css`; BEM-like class names; mobile-first
