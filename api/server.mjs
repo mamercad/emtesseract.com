@@ -193,6 +193,54 @@ async function handleApi(pathname, searchParams) {
     return { data: items.slice(0, 50) };
   }
 
+  /* Step stats — Ollama tasks (analyze, write_content) and crawl */
+  if (pathname === "/api/ops_step_stats") {
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const today = startOfDay.toISOString();
+
+    const { rows: ollama } = await pool.query(
+      `SELECT status, COUNT(*)::int AS c
+       FROM ops_mission_steps
+       WHERE kind IN ('analyze', 'write_content')
+       GROUP BY status`,
+      []
+    );
+    const { rows: ollamaToday } = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM ops_mission_steps
+       WHERE kind IN ('analyze', 'write_content') AND status = 'succeeded' AND created_at >= $1`,
+      [today]
+    );
+    const { rows: crawl } = await pool.query(
+      `SELECT status, COUNT(*)::int AS c
+       FROM ops_mission_steps
+       WHERE kind = 'crawl'
+       GROUP BY status`,
+      []
+    );
+    const { rows: crawlToday } = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM ops_mission_steps
+       WHERE kind = 'crawl' AND status = 'succeeded' AND created_at >= $1`,
+      [today]
+    );
+
+    const toMap = (rows) => Object.fromEntries((rows ?? []).map((r) => [r.status, r.c]));
+    return {
+      data: {
+        ollama: {
+          queued: toMap(ollama).queued ?? 0,
+          running: toMap(ollama).running ?? 0,
+          today: ollamaToday?.[0]?.c ?? 0,
+        },
+        crawl: {
+          queued: toMap(crawl).queued ?? 0,
+          running: toMap(crawl).running ?? 0,
+          today: crawlToday?.[0]?.c ?? 0,
+        },
+      },
+    };
+  }
+
   /* Roundtables — agent-to-agent conversations */
   if (pathname === "/api/roundtables") {
     const { rows } = await pool.query(

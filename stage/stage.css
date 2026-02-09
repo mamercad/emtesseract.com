@@ -75,6 +75,43 @@
   color: var(--accent);
 }
 
+/* Step stats — Ollama / crawl task counts */
+.stage-stats {
+  display: flex;
+  gap: var(--space-lg);
+  font-size: 0.75rem;
+  color: var(--text-300);
+}
+
+.stage-stats__group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.stage-stats__label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.stage-stats__item {
+  color: var(--text-300);
+}
+
+.stage-stats__item span {
+  font-weight: 600;
+  color: var(--text-200);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .stage-stats {
+    display: none;
+  }
+}
+
 /* Main layout */
 .stage-main {
   display: grid;

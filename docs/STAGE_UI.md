@@ -42,10 +42,18 @@ Stage is the frontend for emTesseract Ops. It shows agent activity, missions, an
 
 - Feed: 10s
 - Missions: 20s
+- Step stats: 15s
 - Swimlane: 15s
 - Chat: 2s (while waiting for assistant response)
 
 **Visibility** — Polling pauses when the tab is hidden (Page Visibility API); resumes when visible.
+
+## Step Stats (Ollama tasks)
+
+- **GET /api/ops_step_stats** — Returns `{ ollama: { queued, running, today }, crawl: { queued, running, today } }`.
+- **Ollama** = analyze + write_content steps (LLM-backed).
+- **Crawl** = crawl steps (no LLM).
+- **Header** — Stage header shows compact stats: queued, running, completed today. Polls every 15s.
 
 ## Key Features
 

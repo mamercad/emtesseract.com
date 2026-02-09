@@ -24,6 +24,20 @@
         <img src="/logo.png" alt="emTesseract" width="32" height="32">
         <span>Stage</span>
       </a>
+      <div class="stage-stats" id="stage-stats" aria-label="Task queue stats">
+        <span class="stage-stats__group" title="Ollama: analyze, write_content">
+          <span class="stage-stats__label">Ollama</span>
+          <span class="stage-stats__item"><span id="stats-ollama-queued">—</span> queued</span>
+          <span class="stage-stats__item"><span id="stats-ollama-running">—</span> running</span>
+          <span class="stage-stats__item"><span id="stats-ollama-today">—</span> today</span>
+        </span>
+        <span class="stage-stats__group" title="Crawl tasks">
+          <span class="stage-stats__label">Crawl</span>
+          <span class="stage-stats__item"><span id="stats-crawl-queued">—</span> queued</span>
+          <span class="stage-stats__item"><span id="stats-crawl-running">—</span> running</span>
+          <span class="stage-stats__item"><span id="stats-crawl-today">—</span> today</span>
+        </span>
+      </div>
       <nav class="stage-nav">
         <a href="/stage/artifacts.html">Artifacts</a>
         <a href="/stage/settings.html">Settings</a>

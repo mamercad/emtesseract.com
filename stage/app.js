@@ -31,6 +31,13 @@
   const $giveTaskTopic = document.getElementById("give-task-topic");
   const $giveTaskFeedback = document.getElementById("give-task-feedback");
 
+  const $statsOllamaQueued = document.getElementById("stats-ollama-queued");
+  const $statsOllamaRunning = document.getElementById("stats-ollama-running");
+  const $statsOllamaToday = document.getElementById("stats-ollama-today");
+  const $statsCrawlQueued = document.getElementById("stats-crawl-queued");
+  const $statsCrawlRunning = document.getElementById("stats-crawl-running");
+  const $statsCrawlToday = document.getElementById("stats-crawl-today");
+
   let agentsCache = [];
   let eventKinds = new Set();
   let previousMissionIds = new Set();
@@ -41,6 +48,25 @@
     const res = await fetch(url);
     if (!res.ok) throw new Error(res.statusText);
     return res.json();
+  }
+
+  // ── Step stats (Ollama tasks) ─────────────────────────────
+
+  async function loadStepStats() {
+    if (!$statsOllamaQueued || !$statsOllamaRunning || !$statsOllamaToday) return;
+    try {
+      const { data } = await fetchApi("/api/ops_step_stats");
+      const ollama = data?.ollama ?? {};
+      const crawl = data?.crawl ?? {};
+      $statsOllamaQueued.textContent = ollama.queued ?? "—";
+      $statsOllamaRunning.textContent = ollama.running ?? "—";
+      $statsOllamaToday.textContent = ollama.today ?? "—";
+      $statsCrawlQueued.textContent = crawl.queued ?? "—";
+      $statsCrawlRunning.textContent = crawl.running ?? "—";
+      $statsCrawlToday.textContent = crawl.today ?? "—";
+    } catch (err) {
+      console.error("Step stats load failed:", err);
+    }
   }
 
   // ── Agents ───────────────────────────────────────────────
@@ -342,6 +368,7 @@
     await loadAgents();
     await loadEvents();
     await loadMissions();
+    await loadStepStats();
 
     $filterAgent?.addEventListener("change", () => loadEvents({ fullReplace: true }));
     $filterKind?.addEventListener("change", () => loadEvents({ fullReplace: true }));
@@ -350,6 +377,7 @@
     // Poll when visible; pause when tab hidden (flicker-free incremental updates)
     installVisibilityPolling(() => loadEvents(), 10000);
     installVisibilityPolling(loadMissions, 20000);
+    installVisibilityPolling(loadStepStats, 15000);
   }
 
   init();
