@@ -9,13 +9,11 @@
   --stage-accent-fail: #ef4444;
   --stage-accent-muted: #64748b;
   --stage-border: 2px solid var(--text-100);
-  --stage-grid-bg: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    color-mix(in srgb, var(--accent) 4%, transparent) 2px,
-    color-mix(in srgb, var(--accent) 4%, transparent) 4px
-  );
+  --stage-grid-bg: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      color-mix(in srgb, var(--accent) 4%, transparent) 2px,
+      color-mix(in srgb, var(--accent) 4%, transparent) 4px);
 }
 
 [data-theme="dark"] .stage-page {
@@ -75,35 +73,43 @@
   color: var(--accent);
 }
 
-/* Step stats — Ollama / crawl task counts */
+/* Step stats — compact Ollama / crawl counts */
 .stage-stats {
   display: flex;
-  gap: var(--space-lg);
-  font-size: 0.75rem;
-  color: var(--text-300);
+  align-items: center;
+  gap: var(--space-md);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .stage-stats__group {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
 }
 
 .stage-stats__label {
   font-weight: 700;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--accent);
 }
 
-.stage-stats__item {
+.stage-stats__nums {
   color: var(--text-300);
 }
 
-.stage-stats__item span {
+.stage-stats__nums span {
   font-weight: 600;
   color: var(--text-200);
-  font-variant-numeric: tabular-nums;
+}
+
+.stage-stats__nums span+span::before {
+  content: "·";
+  margin: 0 3px;
+  font-weight: 400;
+  color: var(--text-300);
 }
 
 @media (max-width: 900px) {
@@ -131,6 +137,7 @@
 
 /* Mobile responsive (640px and below) */
 @media (max-width: 640px) {
+
   /* Header — tighter padding, nav wraps */
   .stage-header {
     padding: var(--space-md) var(--space-md);
@@ -311,9 +318,17 @@
   flex-shrink: 0;
 }
 
-.agent-avatar[data-role="analyst"] .agent-avatar__pixel { background: var(--accent-muted); }
-.agent-avatar[data-role="engineer"] .agent-avatar__pixel { background: var(--stage-accent-ok); }
-.agent-avatar[data-role="project-manager"] .agent-avatar__pixel { background: var(--stage-accent-pending); }
+.agent-avatar[data-role="analyst"] .agent-avatar__pixel {
+  background: var(--accent-muted);
+}
+
+.agent-avatar[data-role="engineer"] .agent-avatar__pixel {
+  background: var(--stage-accent-ok);
+}
+
+.agent-avatar[data-role="project-manager"] .agent-avatar__pixel {
+  background: var(--stage-accent-pending);
+}
 
 /* Signal feed */
 .stage-feed {
@@ -382,6 +397,7 @@
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -490,10 +506,25 @@
   text-transform: uppercase;
 }
 
-.mission-card__status--approved { background: color-mix(in srgb, var(--stage-accent-pending) 25%, transparent); color: var(--stage-accent-pending); }
-.mission-card__status--running { background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--accent); }
-.mission-card__status--succeeded { background: color-mix(in srgb, var(--stage-accent-ok) 25%, transparent); color: var(--stage-accent-ok); }
-.mission-card__status--failed { background: color-mix(in srgb, var(--stage-accent-fail) 25%, transparent); color: var(--stage-accent-fail); }
+.mission-card__status--approved {
+  background: color-mix(in srgb, var(--stage-accent-pending) 25%, transparent);
+  color: var(--stage-accent-pending);
+}
+
+.mission-card__status--running {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  color: var(--accent);
+}
+
+.mission-card__status--succeeded {
+  background: color-mix(in srgb, var(--stage-accent-ok) 25%, transparent);
+  color: var(--stage-accent-ok);
+}
+
+.mission-card__status--failed {
+  background: color-mix(in srgb, var(--stage-accent-fail) 25%, transparent);
+  color: var(--stage-accent-fail);
+}
 
 .mission-card__steps {
   margin-top: var(--space-sm);
@@ -540,10 +571,22 @@
   flex-shrink: 0;
 }
 
-.mission-step__status--queued { background: var(--stage-accent-muted); }
-.mission-step__status--running { background: var(--accent); animation: pulse 1.5s ease-in-out infinite; }
-.mission-step__status--succeeded { background: var(--stage-accent-ok); }
-.mission-step__status--failed { background: var(--stage-accent-fail); }
+.mission-step__status--queued {
+  background: var(--stage-accent-muted);
+}
+
+.mission-step__status--running {
+  background: var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.mission-step__status--succeeded {
+  background: var(--stage-accent-ok);
+}
+
+.mission-step__status--failed {
+  background: var(--stage-accent-fail);
+}
 
 .mission-step__artifact-link {
   display: inline-block;
@@ -571,9 +614,11 @@
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent);
   }
+
   30% {
     box-shadow: 0 0 12px 2px color-mix(in srgb, var(--accent) 25%, transparent);
   }
+
   100% {
     box-shadow: none;
   }
@@ -656,8 +701,15 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Setup overlay */
@@ -790,9 +842,20 @@
   margin-bottom: var(--space-xs);
 }
 
-.swimlane-card__agent--ok { background: color-mix(in srgb, var(--stage-accent-ok) 25%, transparent); color: var(--stage-accent-ok); }
-.swimlane-card__agent--pending { background: color-mix(in srgb, var(--stage-accent-pending) 25%, transparent); color: var(--stage-accent-pending); }
-.swimlane-card__agent--muted { background: color-mix(in srgb, var(--stage-accent-muted) 25%, transparent); color: var(--stage-accent-muted); }
+.swimlane-card__agent--ok {
+  background: color-mix(in srgb, var(--stage-accent-ok) 25%, transparent);
+  color: var(--stage-accent-ok);
+}
+
+.swimlane-card__agent--pending {
+  background: color-mix(in srgb, var(--stage-accent-pending) 25%, transparent);
+  color: var(--stage-accent-pending);
+}
+
+.swimlane-card__agent--muted {
+  background: color-mix(in srgb, var(--stage-accent-muted) 25%, transparent);
+  color: var(--stage-accent-muted);
+}
 
 .swimlane-card__id {
   display: inline-block;
@@ -879,9 +942,17 @@
   text-decoration: underline;
 }
 
-.swimlane-card--done .swimlane-card__title { opacity: 0.85; }
-.swimlane-card--done.swimlane-card--succeeded { border-left: 4px solid var(--stage-accent-ok); }
-.swimlane-card--done.swimlane-card--failed { border-left: 4px solid var(--stage-accent-fail); }
+.swimlane-card--done .swimlane-card__title {
+  opacity: 0.85;
+}
+
+.swimlane-card--done.swimlane-card--succeeded {
+  border-left: 4px solid var(--stage-accent-ok);
+}
+
+.swimlane-card--done.swimlane-card--failed {
+  border-left: 4px solid var(--stage-accent-fail);
+}
 
 .swimlane-empty {
   padding: var(--space-2xl);
@@ -1079,10 +1150,14 @@
 }
 
 @keyframes chat-typing {
-  0%, 80%, 100% {
+
+  0%,
+  80%,
+  100% {
     transform: scale(0.6);
     opacity: 0.5;
   }
+
   40% {
     transform: scale(1);
     opacity: 1;
@@ -1094,6 +1169,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1231,9 +1307,17 @@
   letter-spacing: 0.05em;
 }
 
-.roundtable-card__format--watercooler { color: var(--accent); }
-.roundtable-card__format--standup { color: var(--stage-accent-pending); }
-.roundtable-card__format--debate { color: var(--stage-accent-fail); }
+.roundtable-card__format--watercooler {
+  color: var(--accent);
+}
+
+.roundtable-card__format--standup {
+  color: var(--stage-accent-pending);
+}
+
+.roundtable-card__format--debate {
+  color: var(--stage-accent-fail);
+}
 
 .roundtable-card__topic {
   font-weight: 600;
@@ -1251,9 +1335,17 @@
   text-transform: uppercase;
 }
 
-.roundtable-card__status--ok { color: var(--stage-accent-ok); }
-.roundtable-card__status--fail { color: var(--stage-accent-fail); }
-.roundtable-card__status--pending { color: var(--stage-accent-pending); }
+.roundtable-card__status--ok {
+  color: var(--stage-accent-ok);
+}
+
+.roundtable-card__status--fail {
+  color: var(--stage-accent-fail);
+}
+
+.roundtable-card__status--pending {
+  color: var(--stage-accent-pending);
+}
 
 .roundtable-card__time {
   font-size: 0.75rem;

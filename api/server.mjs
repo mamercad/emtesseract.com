@@ -29,7 +29,7 @@ try {
       if (!process.env[key]) process.env[key] = value;
     }
   }
-} catch {}
+} catch { }
 
 const dbUrl = process.env.DATABASE_URL;
 if (!dbUrl || !dbUrl.startsWith("postgres")) {
@@ -411,7 +411,7 @@ async function handlePostChat(body, pool) {
 
     return { status: 200, json: { session_id: sessId, assistant_message_id: assistantMessageId } };
   } catch (err) {
-    await client.query("ROLLBACK").catch(() => {});
+    await client.query("ROLLBACK").catch(() => { });
     throw err;
   } finally {
     client.release();

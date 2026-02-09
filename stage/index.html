@@ -25,17 +25,15 @@
         <span>Stage</span>
       </a>
       <div class="stage-stats" id="stage-stats" aria-label="Task queue stats">
-        <span class="stage-stats__group" title="Ollama: analyze, write_content">
+        <span class="stage-stats__group" title="Ollama: queued · running · today">
           <span class="stage-stats__label">Ollama</span>
-          <span class="stage-stats__item"><span id="stats-ollama-queued">—</span> queued</span>
-          <span class="stage-stats__item"><span id="stats-ollama-running">—</span> running</span>
-          <span class="stage-stats__item"><span id="stats-ollama-today">—</span> today</span>
+          <span class="stage-stats__nums"><span id="stats-ollama-queued">—</span><span
+              id="stats-ollama-running">—</span><span id="stats-ollama-today">—</span></span>
         </span>
-        <span class="stage-stats__group" title="Crawl tasks">
+        <span class="stage-stats__group" title="Crawl: queued · running · today">
           <span class="stage-stats__label">Crawl</span>
-          <span class="stage-stats__item"><span id="stats-crawl-queued">—</span> queued</span>
-          <span class="stage-stats__item"><span id="stats-crawl-running">—</span> running</span>
-          <span class="stage-stats__item"><span id="stats-crawl-today">—</span> today</span>
+          <span class="stage-stats__nums"><span id="stats-crawl-queued">—</span><span
+              id="stats-crawl-running">—</span><span id="stats-crawl-today">—</span></span>
         </span>
       </div>
       <nav class="stage-nav">
@@ -110,7 +108,8 @@
   <div class="stage-setup" id="stage-setup" hidden>
     <div class="stage-setup__card">
       <h2>Configure Stage</h2>
-      <p>Edit <code>stage/config.js</code> and set <code>apiUrl</code> to your Stage API server (e.g. <code>http://localhost:8788</code>).</p>
+      <p>Edit <code>stage/config.js</code> and set <code>apiUrl</code> to your Stage API server (e.g.
+        <code>http://localhost:8788</code>).</p>
       <p>Run the API server on Boomer: <code>node api/server.mjs</code></p>
     </div>
   </div>
