@@ -1,1 +1,84 @@
-:root{--ink:#090a0f;--paper:#e9f1f1;--muted:#829399;--line:#1f2a2e;--line-strong:#46636a;--cyan:#00d5ff;--magenta:#ff21d4;--green:#3dffb0;--blue-dark:#0b2028;--font-display:"Space Grotesk",sans-serif;--font-body:"Space Grotesk",sans-serif;--font-mono:"DM Mono",monospace}
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --dl-background: #ffffff;
+  --dl-surface: #f7f4f0;
+  --dl-raised: #fcfaf8;
+  --dl-foreground: #111111;
+  --dl-secondary: #3a3530;
+  --dl-muted: #6b6560;
+  --dl-border: #ddd7d1;
+  --dl-border-strong: #c9c1b9;
+  --dl-accent: #ff4719;
+  --dl-link: #1050a0;
+  --dl-link-hover: #1a6acc;
+  --dl-success: #1e6b3c;
+  --dl-highlight: #ffb84d;
+  --ink: var(--dl-background);
+  --paper: var(--dl-foreground);
+  --muted: var(--dl-muted);
+  --line: var(--dl-border);
+  --line-strong: var(--dl-border-strong);
+  --cyan: var(--dl-accent);
+  --magenta: #5a2d9a;
+  --green: var(--dl-success);
+  --blue-dark: var(--dl-surface);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --dl-background: #090807;
+  --dl-surface: #0f0d0b;
+  --dl-raised: #171411;
+  --dl-foreground: #e5ddd0;
+  --dl-secondary: #c8beaf;
+  --dl-muted: #8a8176;
+  --dl-border: #3d3530;
+  --dl-border-strong: #4f473f;
+  --dl-accent: #ff4719;
+  --dl-link: #6fb3f5;
+  --dl-link-hover: #8bc3f8;
+  --dl-success: #7fd8a8;
+  --dl-highlight: #ffb84d;
+  --ink: var(--dl-background);
+  --paper: var(--dl-foreground);
+  --muted: var(--dl-muted);
+  --line: var(--dl-border);
+  --line-strong: var(--dl-border-strong);
+  --cyan: var(--dl-accent);
+  --magenta: #d8a8ff;
+  --green: var(--dl-success);
+  --blue-dark: var(--dl-surface);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --dl-background: #090807;
+    --dl-surface: #0f0d0b;
+    --dl-raised: #171411;
+    --dl-foreground: #e5ddd0;
+    --dl-secondary: #c8beaf;
+    --dl-muted: #8a8176;
+    --dl-border: #3d3530;
+    --dl-border-strong: #4f473f;
+    --dl-link: #6fb3f5;
+    --dl-link-hover: #8bc3f8;
+    --dl-success: #7fd8a8;
+    --ink: var(--dl-background);
+    --paper: var(--dl-foreground);
+    --muted: var(--dl-muted);
+    --line: var(--dl-border);
+    --line-strong: var(--dl-border-strong);
+    --cyan: var(--dl-accent);
+    --magenta: #d8a8ff;
+    --green: var(--dl-success);
+    --blue-dark: var(--dl-surface);
+  }
+}
+
+:root {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Space Grotesk", sans-serif;
+  --font-mono: "DM Mono", monospace;
+}
