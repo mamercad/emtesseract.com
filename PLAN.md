@@ -1,12 +1,12 @@
-# Marketing site landing page
+# emTesseract marketing site
 
 ## Requirements
 
 - Use skills in <repo-root>/.cursor/skills/
 - Build marketing site landing page for emtesseract.com based on style of logo.png
-- Feel: cartoony and minimal and clear and clean
-- Light and dark mode
-- Vibes: relaxed and fun, retro gaming, playful
+- Feel: cinematic, expressive, minimal, and clear
+- Dark-first visual system with sharp cyan/magenta signal colors
+- Vibes: independent studio, creative tools, retro-futurist atmosphere
 - Read existing emtesseract.com live web site for *content*
 - Base landing page content on existing site *content*
 - Hosted at emtesseract.com
@@ -14,21 +14,22 @@
 
 ## Implementation (current)
 
-**Design:** Retro arcade / playful — bold borders, offset shadows, colored accents. Avoids generic “bleh” minimalism.
+**Design:** Editorial studio index with a dark technical canvas, oversized typography, precise metadata, diagrammatic product art, and a curated Neon Mary gallery. Avoids generic SaaS cards and a center-stacked hero.
 
-**Typography:** Syne (headings), DM Sans (body)
+**Typography:** Space Grotesk (display/body), DM Mono (metadata)
 
 **Structure:**
 
-- `index.html` — semantic HTML, theme toggle, content from live site (game dev company)
-- `style.css` — main styles, light/dark via `[data-theme]`
-- `assets/css/variables.css` — design tokens for both themes
+- `index.html` — semantic studio landing page with Designless Cloud, Neon Mary, games, and contact
+- `style.css` — responsive editorial layout and interaction states
+- `assets/css/variables.css` — dark-first design tokens
+- `assets/images/neon-mary-blade-runner.png` — curated Neon Mary showcase
 - `logo.png` — site logo
 - `404.html` — custom 404 with theme support
 
-**Theme:** Toggle in header; respects `prefers-color-scheme` and persists in `localStorage` (key: `emtesseract-theme`).
+**Product focus:** Designless Cloud is the only current product presented. Existing games remain a small archive of experiments rather than competing products.
 
-**Content:** Hero, About (3 pillars), Featured Games (6 cards), Get in Touch, footer.
+**Content:** Studio hero, Designless Cloud product focus, Neon Mary feature, compact game archive, open contact channel, footer.
 
 ## Deployment
 
