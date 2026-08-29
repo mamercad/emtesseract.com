@@ -5,8 +5,9 @@
 - Use skills in <repo-root>/.cursor/skills/
 - Build marketing site landing page for emtesseract.com based on style of logo.png
 - Feel: cinematic, expressive, minimal, and clear
-- Dark-first visual system with sharp cyan/magenta signal colors
-- Vibes: independent studio, creative tools, retro-futurist atmosphere
+- Designless warm-monochrome system with a single molten-orange accent (`#FF4719`)
+- Explicit System / Light / Dark modes with faithful light and dark variants
+- Vibes: independent studio, creative tools, restrained character
 - Read existing emtesseract.com live web site for *content*
 - Base landing page content on existing site *content*
 - Hosted at emtesseract.com
@@ -14,9 +15,11 @@
 
 ## Implementation (current)
 
-**Design:** Editorial studio index with a dark technical canvas, oversized typography, precise metadata, diagrammatic product art, and a curated Neon Mary gallery. Avoids generic SaaS cards and a center-stacked hero.
+**Design:** Editorial studio index using Designless principles: warm monochrome first, one accent for active/focus states, structure over decoration, oversized typography, precise metadata, diagrammatic product art, and a curated Neon Mary gallery. Avoids generic SaaS cards and a center-stacked hero.
 
 **Typography:** Space Grotesk (display/body), DM Mono (metadata)
+
+**Color modes:** `System` follows `prefers-color-scheme`; `Light` and `Dark` are explicit overrides and persist in `localStorage` under `emtesseract-theme`.
 
 **Structure:**
 
